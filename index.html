@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Suivi Carrière</title>
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2a78d6">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Suivi Carrière">
+<style>
+  :root{
+    color-scheme: light;
+    --surface-1:#fcfcfb;
+    --page:#f9f9f7;
+    --text-primary:#0b0b0b;
+    --text-secondary:#52514e;
+    --muted:#898781;
+    --gridline:#e1e0d9;
+    --border:rgba(11,11,11,0.10);
+    --series-camion:#2a78d6;
+    --series-depot:#eb6834;
+    --series-carriere:#1baf7a;
+    --series-transactions:#4a3aa7;
+    --series-moi:#eda100;
+    --series-journal:#e87ba4;
+    --series-tsyhadino:#008300;
+    --series-chargement:#e34948;
+    --good:#0ca30c;
+    --good-text:#006300;
+    --critical:#d03b3b;
+    --warning:#eda100;
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --surface-1:#1a1a19;
+      --page:#0d0d0d;
+      --text-primary:#ffffff;
+      --text-secondary:#c3c2b7;
+      --muted:#898781;
+      --gridline:#2c2c2a;
+      --border:rgba(255,255,255,0.10);
+      --series-camion:#3987e5;
+      --series-depot:#d95926;
+      --series-carriere:#199e70;
+      --series-transactions:#9085e9;
+      --series-moi:#c98500;
+      --series-journal:#d55181;
+      --series-tsyhadino:#008300;
+      --series-chargement:#e66767;
+      --good:#0ca30c;
+      --good-text:#0ca30c;
+      --critical:#e66767;
+      --warning:#c98500;
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background:var(--page);
+    color:var(--text-primary);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:76px;
+  }
+  header.topbar{
+    position:sticky; top:0; z-index:20;
+    background:var(--surface-1);
+    border-bottom:1px solid var(--border);
+    padding:14px 16px 12px;
+  }
+  header.topbar h1{
+    font-size:17px; margin:0 0 2px; font-weight:700;
+  }
+  header.topbar .subtitle{
+    font-size:12.5px; color:var(--text-secondary); margin:0;
+  }
+  .search-wrap{ position:relative; margin-top:10px; }
+  .search-wrap input{
+    width:100%; padding:9px 34px 9px 32px; border-radius:10px; border:1px solid var(--border);
+    background:var(--page); color:var(--text-primary); font-size:14px; font-family:inherit;
+  }
+  .search-wrap input:focus{ outline:2px solid var(--series-camion); outline-offset:-1px; }
+  .search-wrap .search-icon{
+    position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--muted); pointer-events:none;
+  }
+  .search-wrap .search-clear{
+    position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none;
+    color:var(--muted); font-size:15px; cursor:pointer; padding:6px 8px; display:none;
+  }
+  .search-results{
+    position:absolute; left:0; right:0; top:calc(100% + 6px); background:var(--surface-1);
+    border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.18);
+    max-height:min(60vh,420px); overflow-y:auto; z-index:40; display:none;
+  }
+  .search-results.open{ display:block; }
+  .search-result-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer;
+    border-bottom:1px solid var(--gridline);
+  }
+  .search-result-item:last-child{ border-bottom:none; }
+  .search-result-item:hover, .search-result-item:active{ background:var(--page); }
+  .search-result-icon{ font-size:18px; flex:none; }
+  .search-result-text{ flex:1; min-width:0; }
+  .search-result-title{ font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .search-result-sub{ font-size:11.5px; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .search-result-date{ font-size:11px; color:var(--muted); flex:none; }
+  .search-empty{ padding:16px; text-align:center; color:var(--text-secondary); font-size:13px; }
+  main{ padding:14px 14px 24px; max-width:640px; margin:0 auto; }
+
+  .tabpanel{ display:none; }
+  .tabpanel.active{ display:block; }
+
+  /* Stat tiles */
+  .stats-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;
+  }
+  .stat-tile{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius);
+    padding:12px 12px;
+  }
+  .stat-tile .label{ font-size:11.5px; color:var(--text-secondary); margin-bottom:4px; }
+  .stat-tile .value{ font-size:19px; font-weight:700; font-variant-numeric: proportional-nums; }
+  .stat-tile .value.good{ color:var(--good-text); }
+  .stat-tile .value.critical{ color:var(--critical); }
+
+  /* Cards / entries */
+  .section-title{
+    font-size:13px; font-weight:700; color:var(--text-secondary);
+    text-transform:uppercase; letter-spacing:.03em;
+    margin:18px 2px 8px;
+  }
+  .entry-card{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius);
+    padding:12px 14px; margin-bottom:10px; cursor:pointer;
+  }
+  .entry-card:active{ opacity:.85; }
+  .entry-row1{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .entry-name{ font-weight:700; font-size:15px; }
+  .entry-date{ font-size:12px; color:var(--muted); white-space:nowrap; }
+  .entry-row2{ display:flex; justify-content:space-between; align-items:center; margin-top:6px; gap:8px; flex-wrap:wrap; }
+  .entry-meta{ font-size:12.5px; color:var(--text-secondary); }
+  .entry-amounts{ font-size:12.5px; color:var(--text-secondary); text-align:right; }
+  .pill{
+    display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px;
+    margin-left:6px;
+  }
+  .pill.reste-due{ background:rgba(208,59,59,.12); color:var(--critical); }
+  .pill.reste-clear{ background:rgba(12,163,12,.12); color:var(--good-text); }
+  .empty-state{
+    text-align:center; color:var(--muted); font-size:13.5px; padding:36px 12px;
+  }
+
+  /* Filter chips (Mes Transactions) */
+  .chip-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; }
+  .chip{
+    flex:none; border:1px solid var(--border); background:var(--surface-1);
+    color:var(--text-secondary); font-size:12.5px; font-weight:600;
+    padding:7px 13px; border-radius:99px; cursor:pointer; white-space:nowrap;
+  }
+  .chip.active{ background:var(--text-primary); color:var(--surface-1); border-color:var(--text-primary); }
+
+  /* Bottom nav (phone) */
+  nav.bottomnav{
+    position:fixed; left:0; right:0; bottom:0; top:auto; width:auto; z-index:30;
+    display:flex; flex-direction:row; background:var(--surface-1); border-top:1px solid var(--border);
+    border-right:none; padding:6px 4px 10px; overflow:visible;
+  }
+  nav.bottomnav button{
+    flex:1; background:none; border:none; border-radius:0; display:flex; flex-direction:column; align-items:center;
+    gap:2px; padding:6px 2px; color:var(--muted); font-size:11px; font-family:inherit; cursor:pointer;
+  }
+  nav.bottomnav button .icon{ font-size:20px; line-height:1; }
+  nav.bottomnav button.active{ color:var(--text-primary); font-weight:700; }
+  nav.bottomnav button.nav-sep{ border-left:1px solid var(--border); margin-left:4px; padding-left:8px; }
+  nav.bottomnav button.active .icon{ filter:none; }
+
+  /* Floating add button */
+  .fab{
+    position:fixed; right:18px; bottom:86px; z-index:25;
+    width:54px; height:54px; border-radius:50%; border:none;
+    background:var(--text-primary); color:var(--surface-1);
+    font-size:26px; box-shadow:0 4px 14px rgba(0,0,0,.25);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+
+  /* Modal — always a centered dialog, sized against the backdrop (not vh, to dodge mobile-browser viewport quirks) */
+  .modal-backdrop{
+    position:fixed; top:0; right:0; bottom:0; left:0; background:rgba(0,0,0,.45); z-index:50;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal{
+    background:var(--surface-1); width:100%; max-width:520px; max-height:100%; overflow-y:auto;
+    border-radius:20px; padding:18px 18px 22px;
+  }
+  .modal h2{ margin:0 0 14px; font-size:17px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
+  .field input, .field select, .field textarea{
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--page); color:var(--text-primary); font-size:15px; font-family:inherit;
+  }
+  .field .computed{
+    padding:11px 12px; border-radius:10px; background:var(--page); border:1px dashed var(--border);
+    font-size:15px; font-weight:700;
+  }
+  .modal-actions{ display:flex; gap:10px; margin-top:6px; }
+  .btn{
+    flex:1; padding:13px; border-radius:10px; border:none; font-size:14.5px; font-weight:700;
+    font-family:inherit; cursor:pointer;
+  }
+  .btn.primary{ background:var(--text-primary); color:var(--surface-1); }
+  .btn.secondary{ background:var(--page); color:var(--text-primary); border:1px solid var(--border); }
+  .btn.danger{ background:rgba(208,59,59,.12); color:var(--critical); }
+  .btn.full{ width:100%; }
+
+  .datamgmt{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px; margin-top:22px;
+  }
+  .datamgmt h3{ font-size:13px; margin:0 0 10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.03em; }
+  .datamgmt .row{ display:flex; gap:8px; margin-bottom:8px; }
+  .datamgmt .row:last-child{ margin-bottom:0; }
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:96px; z-index:60;
+    background:var(--text-primary); color:var(--surface-1); padding:10px 18px; border-radius:99px;
+    font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s;
+  }
+  .toast.show{ opacity:1; }
+  input[type=file]{ display:none; }
+
+  /* Tablet layout — applied via a JS-computed class on <body>, not a CSS media query.
+     (Some Android WebViews / in-app browsers evaluate @media viewport queries unreliably;
+     window.innerWidth read from JS is far more consistently supported.) */
+  body.tablet{ padding-bottom:0; padding-left:104px; }
+  body.tablet header.topbar{ padding-left:28px; }
+  body.tablet .search-wrap{ max-width:420px; }
+  body.tablet main{ max-width:920px; padding:22px 28px 40px; margin:0; }
+  body.tablet .stats-grid{ grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); }
+
+  body.tablet nav.bottomnav{
+    left:0; right:auto; top:0; bottom:0; width:104px;
+    flex-direction:column; justify-content:flex-start; gap:6px;
+    border-top:none; border-right:1px solid var(--border);
+    padding:24px 8px; overflow-y:auto;
+  }
+  body.tablet nav.bottomnav button{ flex:none; padding:12px 4px; border-radius:12px; }
+  body.tablet nav.bottomnav button .icon{ font-size:23px; }
+  body.tablet nav.bottomnav button.nav-sep{ border-left:none; margin-left:0; padding-left:4px; border-top:1px solid var(--border); margin-top:10px; padding-top:14px; }
+
+  body.tablet .fab{ right:32px; bottom:32px; }
+  body.tablet .toast{ left:calc(104px + (100% - 104px)/2); bottom:32px; }
+  body.tablet .modal{ max-width:560px; }
+  body.tablet .chip-row{ flex-wrap:wrap; overflow-x:visible; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1 id="pageTitle">Suivi Carrière</h1>
+  <p class="subtitle" id="pageSubtitle">Gestion des comptes — hors-ligne, sur cet appareil</p>
+  <div class="search-wrap">
+    <span class="search-icon">🔎</span>
+    <input type="text" id="searchInput" placeholder="Rechercher (nom, camion, dépôt, carrière...)" autocomplete="off">
+    <button type="button" class="search-clear" id="searchClear" title="Effacer">✕</button>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- CAMION -->
+  <section class="tabpanel" id="tab-camion">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Voyages enregistrés</div><div class="value" id="camion-count">0</div></div>
+      <div class="stat-tile"><div class="label">Total à payer</div><div class="value critical" id="camion-total">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique des camions</div>
+    <div id="camion-list"></div>
+  </section>
+
+  <!-- DEPOT -->
+  <section class="tabpanel" id="tab-depot">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Total reçu (avances)</div><div class="value good" id="depot-avance">0 Ar</div></div>
+      <div class="stat-tile"><div class="label">Reste à percevoir</div><div class="value critical" id="depot-reste">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique du dépôt</div>
+    <div id="depot-list"></div>
+  </section>
+
+  <!-- CARRIERE -->
+  <section class="tabpanel" id="tab-carriere">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Total avancé</div><div class="value critical" id="carriere-avance">0 Ar</div></div>
+      <div class="stat-tile"><div class="label">Reste à payer</div><div class="value critical" id="carriere-reste">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique de la carrière</div>
+    <div id="carriere-list"></div>
+  </section>
+
+  <!-- MOI -->
+  <section class="tabpanel" id="tab-moi">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Opérations</div><div class="value" id="moi-count">0</div></div>
+      <div class="stat-tile"><div class="label">Total versement payé</div><div class="value critical" id="moi-total">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique — Moi</div>
+    <div id="moi-list"></div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="tabpanel" id="tab-journal">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Opérations</div><div class="value" id="journal-count">0</div></div>
+      <div class="stat-tile"><div class="label">Reste Total</div><div class="value good" id="journal-total">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique — Journal</div>
+    <div id="journal-list"></div>
+  </section>
+
+  <!-- TRANSACTIONS -->
+  <section class="tabpanel" id="tab-transactions">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Total encaissé</div><div class="value good" id="tx-in">0 Ar</div></div>
+      <div class="stat-tile"><div class="label">Total dépensé</div><div class="value critical" id="tx-out">0 Ar</div></div>
+      <div class="stat-tile" style="grid-column:1/-1;"><div class="label">Solde de caisse (estimation)</div><div class="value" id="tx-solde">0 Ar</div></div>
+    </div>
+
+    <div class="chip-row" id="tx-filters">
+      <button class="chip active" data-filter="tous">Tous</button>
+      <button class="chip" data-filter="camion">🚛 Camion</button>
+      <button class="chip" data-filter="depot">🏭 Dépôt</button>
+      <button class="chip" data-filter="carriere">⛏️ Carrière</button>
+      <button class="chip" data-filter="moi">👤 Moi</button>
+      <button class="chip" data-filter="journal">📓 Journal</button>
+      <button class="chip" data-filter="libre">📝 Libres</button>
+    </div>
+
+    <div class="section-title">Historique de toutes les opérations</div>
+    <div id="tx-list"></div>
+
+    <div class="datamgmt">
+      <h3>Gestion des données</h3>
+      <div class="row">
+        <button class="btn secondary full" id="btn-export-json">⬇️ Sauvegarder (fichier)</button>
+        <button class="btn secondary full" id="btn-import-json">⬆️ Restaurer</button>
+      </div>
+      <div class="row">
+        <button class="btn secondary full" id="btn-export-csv">📊 Exporter en CSV (Excel)</button>
+      </div>
+      <div class="row">
+        <button class="btn danger full" id="btn-reset">🗑️ Tout effacer</button>
+      </div>
+      <input type="file" id="import-file-input" accept="application/json">
+    </div>
+  </section>
+
+  <!-- TSYHADINO (onglet indépendant) -->
+  <section class="tabpanel" id="tab-tsyhadino">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Opérations</div><div class="value" id="tsyhadino-count">0</div></div>
+      <div class="stat-tile"><div class="label">Total</div><div class="value" id="tsyhadino-total">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique — TsyHadino</div>
+    <div id="tsyhadino-list"></div>
+  </section>
+
+  <!-- CHARGEMENT (onglet indépendant) -->
+  <section class="tabpanel" id="tab-chargement">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Opérations</div><div class="value" id="chargement-count">0</div></div>
+      <div class="stat-tile"><div class="label">Reste à payer</div><div class="value critical" id="chargement-total">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique — Chargement</div>
+    <div id="chargement-list"></div>
+  </section>
+
+</main>
+
+<button class="fab" id="fabAdd" title="Ajouter">+</button>
+
+<nav class="bottomnav">
+  <button data-tab="camion" class="active"><span class="icon">🚛</span>Camion</button>
+  <button data-tab="depot"><span class="icon">🏭</span>Dépôt</button>
+  <button data-tab="carriere"><span class="icon">⛏️</span>Carrière</button>
+  <button data-tab="moi"><span class="icon">👤</span>Moi</button>
+  <button data-tab="journal"><span class="icon">📓</span>Journal</button>
+  <button data-tab="transactions"><span class="icon">📒</span>Transactions</button>
+  <button data-tab="tsyhadino" class="nav-sep"><span class="icon">📌</span>TsyHadino</button>
+  <button data-tab="chargement"><span class="icon">📦</span>Chargement</button>
+</nav>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h2 id="modalTitle">Ajouter</h2>
+    <form id="entryForm"></form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DEVISE = "Ar";
+  var STORAGE_KEY = "suivi_carriere_data_v1";
+  var storageOK = true;
+
+  function todayISO(){
+    var d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function num(v){ v = parseFloat(v); return isNaN(v) ? 0 : v; }
+  function fmtMoney(n){
+    n = Math.round(num(n));
+    return n.toLocaleString("fr-FR") + " " + DEVISE;
+  }
+  function fmtDate(iso){
+    if(!iso) return "";
+    var parts = iso.split("-");
+    if(parts.length!==3) return iso;
+    return parts[2]+"/"+parts[1]+"/"+parts[0];
+  }
+
+  var DEFAULT_DATA = { camion:[], depot:[], carriere:[], moi:[], journal:[], transactions:[], tsyhadino:[], chargement:[] };
+  var data = null;
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ data = JSON.parse(raw); }
+      else { data = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+    }catch(e){
+      storageOK = false;
+      data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+    ["camion","depot","carriere","moi","journal","transactions","tsyhadino","chargement"].forEach(function(k){
+      if(!Array.isArray(data[k])) data[k] = [];
+    });
+  }
+  function save(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){
+      storageOK = false;
+      showToast("⚠️ Sauvegarde impossible sur cet appareil");
+    }
+  }
+
+  var toastTimer = null;
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2200);
+  }
+
+  /* ---------- Field definitions per category ---------- */
+  var FIELDS = {
+    camion: [
+      {key:"date", label:"Date début", type:"date", required:true},
+      {key:"dateArrivee", label:"Date d'arrivée", type:"date"},
+      {key:"nomCamion", label:"Nom du camion", type:"text", required:true},
+      {key:"chauffeur", label:"Chauffeur", type:"text"},
+      {key:"tonnage", label:"Tonnage (T)", type:"number"},
+      {key:"deplacement", label:"Déplacement / Trajet ("+DEVISE+")", type:"number"},
+      {key:"deplacementPayePar", label:"Le déplacement a été payé par", type:"select", options:[["camion","Le camion (à inclure dans le total)"],["moi","Moi (déjà suivi dans l'onglet Moi, ne pas compter ici)"]]},
+      {key:"gasoil", label:"Gasoil ("+DEVISE+")", type:"number"},
+      {key:"frais", label:"Autres frais par tonne ("+DEVISE+")", type:"number"},
+      {key:"statutPaiement", label:"Statut", type:"select", options:[["nonpaye","Non payé"],["paye","Payé"]]},
+      {key:"dateNonPaye", label:"Date (non payé)", type:"date"},
+      {key:"datePaiement", label:"Date de paiement (payé)", type:"date"},
+      {key:"nomDepot", label:"Nom du dépôt", type:"text"},
+      {key:"carriereNom", label:"Carrière", type:"text"}
+    ],
+    depot: [
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"nom", label:"Nom / Client", type:"text", required:true},
+      {key:"total", label:"Total ("+DEVISE+")", type:"number"},
+      {key:"avance", label:"Avance reçue ("+DEVISE+")", type:"number"},
+      {key:"rendement", label:"Rendement", type:"text"}
+    ],
+    carriere: [
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"nom", label:"Nom / Fournisseur", type:"text", required:true},
+      {key:"camion", label:"Camion", type:"text"},
+      {key:"voiture", label:"Véhicule / Immatriculation", type:"text"},
+      {key:"poids", label:"Poids (T)", type:"number"},
+      {key:"gony", label:"Gony", type:"number"},
+      {key:"prix", label:"Prix", type:"number"},
+      {key:"objetCommission", label:"Objet de Commission", type:"text"},
+      {key:"commission", label:"Commission ("+DEVISE+")", type:"number"},
+      {key:"avance", label:"Avance versée ("+DEVISE+")", type:"number"}
+    ],
+    moi: [
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"camion", label:"Camion", type:"text"},
+      {key:"tonnage", label:"Tonnage (kg)", type:"number"},
+      {key:"tonnagePlus", label:"Tonnage + (kg)", type:"number"},
+      {key:"prix", label:"Prix (Ar/kg)", type:"number"},
+      {key:"pourcentage", label:"Pourcentage (%)", type:"number"},
+      {key:"paiement", label:"Paiement (avance déjà versée, Ar)", type:"number"},
+      {key:"nomDepot", label:"Nom du Dépôt", type:"text"}
+    ],
+    journal: [
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"camionArrive", label:"Camion arrivé", type:"text"},
+      {key:"tonnage", label:"Poids camion / Tonnage (T)", type:"number"},
+      {key:"entree", label:"Entrée ("+DEVISE+")", type:"number"},
+      {key:"depenses", label:"Dépenses ("+DEVISE+")", type:"number"},
+      {key:"autresCommission", label:"Autres commission ("+DEVISE+")", type:"number"}
+    ],
+    tsyhadino: [
+      {key:"reste", label:"Reste ("+DEVISE+")", type:"number"},
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"objetCommission", label:"Objet commission", type:"text"},
+      {key:"prix", label:"Prix ("+DEVISE+")", type:"number"},
+      {key:"pvary", label:"P.vary ("+DEVISE+")", type:"number"}
+    ],
+    chargement: [
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"nom", label:"Nom", type:"text"},
+      {key:"chargement", label:"Chargement", type:"text"},
+      {key:"poidsGony", label:"Poids/Gony", type:"number"},
+      {key:"prix", label:"Prix", type:"number"},
+      {key:"avance", label:"Avance ("+DEVISE+")", type:"number"}
+    ]
+  };
+
+  function computeTsyHadinoTotal(entry){
+    return num(entry.reste) + (num(entry.prix) + num(entry.pvary));
+  }
+  function computeChargementTotal(entry){
+    return num(entry.poidsGony) * num(entry.prix);
+  }
+  function computeChargementReste(entry){
+    return computeChargementTotal(entry) - num(entry.avance);
+  }
+  function computePrixTGony(entry){
+    return num(entry.gony) * num(entry.prix);
+  }
+  function computeReste(cat, entry){
+    if(cat==="depot") return num(entry.total) - num(entry.avance);
+    if(cat==="carriere") return computePrixTGony(entry) - (num(entry.avance) + num(entry.commission));
+    return 0;
+  }
+  function computeCamionTotal(entry){
+    var deplacementCost = entry.deplacementPayePar==="moi" ? 0 : num(entry.deplacement);
+    return (deplacementCost + num(entry.gasoil)) - (num(entry.frais) * num(entry.tonnage));
+  }
+  function computeTonnageTotal(entry){
+    return num(entry.tonnage) + num(entry.tonnagePlus);
+  }
+  function computeVersementPaye(entry){
+    var tonnageTotal = computeTonnageTotal(entry);
+    var poidsNet = tonnageTotal - (tonnageTotal * num(entry.pourcentage) / 100);
+    var montantBrut = poidsNet * num(entry.prix);
+    return montantBrut - num(entry.paiement);
+  }
+  function computeJournalReste(entry){
+    return num(entry.entree) - (num(entry.depenses) - num(entry.autresCommission));
+  }
+
+  var CATEGORY_META = {
+    camion:   {icon:"🚛", color:"var(--series-camion)"},
+    depot:    {icon:"🏭", color:"var(--series-depot)"},
+    carriere: {icon:"⛏️", color:"var(--series-carriere)"},
+    moi:      {icon:"👤", color:"var(--series-moi)"},
+    journal:  {icon:"📓", color:"var(--series-journal)"},
+    libre:    {icon:"📝", color:"var(--series-transactions)"},
+    tsyhadino:{icon:"📌", color:"var(--series-tsyhadino)"},
+    chargement:{icon:"📦", color:"var(--series-chargement)"}
+  };
+
+  /* ---------- Rendering ---------- */
+  function renderAll(){
+    renderCamion();
+    renderDepot();
+    renderCarriere();
+    renderMoi();
+    renderJournal();
+    renderTransactions();
+    renderTsyHadino();
+    renderChargement();
+  }
+
+  function sortedByDateDesc(arr){
+    return arr.slice().sort(function(a,b){ return (b.date||"").localeCompare(a.date||""); });
+  }
+
+  function renderCamion(){
+    var list = data.camion;
+    var totalDep = 0;
+    list.forEach(function(e){ totalDep += computeCamionTotal(e); });
+    document.getElementById("camion-count").textContent = list.length;
+    var camionTotalEl = document.getElementById("camion-total");
+    camionTotalEl.textContent = fmtMoney(totalDep);
+    camionTotalEl.className = "value " + (totalDep>=0 ? "critical" : "good");
+
+    var container = document.getElementById("camion-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucun voyage enregistré. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var total = computeCamionTotal(e);
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      var meta = [e.chauffeur, e.tonnage?e.tonnage+" T":"", e.dateArrivee?("Arrivée : "+fmtDate(e.dateArrivee)):"", e.carriereNom?("Carrière : "+e.carriereNom):"", e.nomDepot?("Dépôt : "+e.nomDepot):""].filter(Boolean).map(esc).join(" · ");
+      if(e.deplacementPayePar==="moi"){ meta += ' <span class="pill reste-due">déplacement payé par Moi</span>'; }
+      var statutPill = e.statutPaiement==="paye"
+        ? ' <span class="pill reste-clear">Payé'+(e.datePaiement?(" · "+fmtDate(e.datePaiement)):"")+'</span>'
+        : ' <span class="pill reste-due">Non payé'+(e.dateNonPaye?(" · "+fmtDate(e.dateNonPaye)):"")+'</span>';
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.nomCamion||"Camion")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<span class="entry-amounts" style="color:'+(total>=0?"var(--critical)":"var(--good-text)")+';font-weight:700;">'+fmtMoney(total)+statutPill+'</span></div>';
+      card.onclick = function(){ openForm("camion", e.id); };
+      container.appendChild(card);
+    });
+  }
+
+  function renderDepot(){
+    var list = data.depot;
+    var totalAvance = 0, totalReste = 0;
+    list.forEach(function(e){ totalAvance += num(e.avance); var r = computeReste("depot", e); if(r>0) totalReste += r; });
+    document.getElementById("depot-avance").textContent = fmtMoney(totalAvance);
+    document.getElementById("depot-reste").textContent = fmtMoney(totalReste);
+
+    var container = document.getElementById("depot-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucune opération de dépôt. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var reste = computeReste("depot", e);
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.nom||"Client")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+[e.rendement?("Rendement : "+esc(e.rendement)):"", "Total : "+fmtMoney(e.total)].filter(Boolean).join(" · ")+'</span>'+
+        '<span class="entry-amounts">Reste '+pill(reste)+'</span></div>';
+      card.onclick = function(){ openForm("depot", e.id); };
+      container.appendChild(card);
+    });
+  }
+
+  function renderCarriere(){
+    var list = data.carriere;
+    var totalAvance = 0, totalReste = 0;
+    list.forEach(function(e){ totalAvance += num(e.avance); var r = computeReste("carriere", e); if(r>0) totalReste += r; });
+    document.getElementById("carriere-avance").textContent = fmtMoney(totalAvance);
+    document.getElementById("carriere-reste").textContent = fmtMoney(totalReste);
+
+    var container = document.getElementById("carriere-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucun achat à la carrière. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var reste = computeReste("carriere", e);
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.nom||"Fournisseur")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+[e.camion?("Camion : "+esc(e.camion)):"", e.poids?(e.poids+" T"):"", e.gony?("Gony : "+e.gony):"", e.objetCommission?("Commission : "+esc(e.objetCommission)):""].filter(Boolean).join(" · ")+'</span>'+
+        '<span class="entry-amounts">Reste '+pill(reste)+'</span></div>';
+      card.onclick = function(){ openForm("carriere", e.id); };
+      container.appendChild(card);
+    });
+  }
+
+  function renderMoi(){
+    var list = data.moi;
+    var total = 0;
+    list.forEach(function(e){ total += computeVersementPaye(e); });
+    document.getElementById("moi-count").textContent = list.length;
+    document.getElementById("moi-total").textContent = fmtMoney(total);
+
+    var container = document.getElementById("moi-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucune opération enregistrée. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var versement = computeVersementPaye(e);
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      var tonnageTotal = computeTonnageTotal(e);
+      var meta = [e.nomDepot?("Dépôt : "+esc(e.nomDepot)):"", tonnageTotal?(tonnageTotal+" kg (total)"):"", e.pourcentage?(e.pourcentage+"%"):""].filter(Boolean).join(" · ");
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.camion||"Camion")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<span class="entry-amounts">Versement payé : '+fmtMoney(versement)+'</span></div>';
+      card.onclick = function(){ openForm("moi", e.id); };
+      container.appendChild(card);
+    });
+  }
+
+  function renderJournal(){
+    var list = data.journal;
+    var total = 0;
+    list.forEach(function(e){ total += computeJournalReste(e); });
+    document.getElementById("journal-count").textContent = list.length;
+    var journalTotalEl = document.getElementById("journal-total");
+    journalTotalEl.textContent = fmtMoney(total);
+    journalTotalEl.className = "value " + (total>=0 ? "good" : "critical");
+
+    var container = document.getElementById("journal-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucune entrée de journal. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var reste = computeJournalReste(e);
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      var meta = [e.tonnage?(e.tonnage+" T"):"", e.entree?("Entrée : "+fmtMoney(e.entree)):""].filter(Boolean).join(" · ");
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.camionArrive||"Journal")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<span class="entry-amounts" style="color:'+(reste>=0?"var(--good-text)":"var(--critical)")+';font-weight:700;">Reste : '+fmtMoney(reste)+'</span></div>';
+      card.onclick = function(){ openForm("journal", e.id); };
+      container.appendChild(card);
+    });
+  }
+
+  function renderTsyHadino(){
+    var list = data.tsyhadino;
+    var total = 0;
+    list.forEach(function(e){ total += computeTsyHadinoTotal(e); });
+    document.getElementById("tsyhadino-count").textContent = list.length;
+    document.getElementById("tsyhadino-total").textContent = fmtMoney(total);
+
+    var container = document.getElementById("tsyhadino-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucune entrée. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var total1 = computeTsyHadinoTotal(e);
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      var meta = [e.objetCommission?esc(e.objetCommission):"", e.reste?("Reste : "+fmtMoney(e.reste)):""].filter(Boolean).join(" · ");
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.objetCommission||"TsyHadino")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<span class="entry-amounts" style="font-weight:700;">Total : '+fmtMoney(total1)+'</span></div>';
+      card.onclick = function(){ openForm("tsyhadino", e.id); };
+      container.appendChild(card);
+    });
+  }
+
+  function renderChargement(){
+    var list = data.chargement;
+    var totalAvance = 0, totalReste = 0;
+    list.forEach(function(e){ totalAvance += num(e.avance); var r = computeChargementReste(e); if(r>0) totalReste += r; });
+    document.getElementById("chargement-count").textContent = list.length;
+    document.getElementById("chargement-total").textContent = fmtMoney(totalReste);
+
+    var container = document.getElementById("chargement-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucun chargement enregistré. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var reste = computeChargementReste(e);
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      var meta = [e.chargement?esc(e.chargement):"", e.poidsGony?("Poids/Gony : "+e.poidsGony):""].filter(Boolean).join(" · ");
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.nom||"Chargement")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<span class="entry-amounts">Reste '+pill(reste)+'</span></div>';
+      card.onclick = function(){ openForm("chargement", e.id); };
+      container.appendChild(card);
+    });
+  }
+
+  var txFilter = "tous";
+  function unifiedTransactions(){
+    var items = [];
+    data.camion.forEach(function(e){
+      var statutTxt = e.statutPaiement==="paye"
+        ? "Payé" + (e.datePaiement?(" · "+fmtDate(e.datePaiement)):"")
+        : "Non payé" + (e.dateNonPaye?(" · "+fmtDate(e.dateNonPaye)):"");
+      var sub = [e.chauffeur, statutTxt].filter(Boolean).join(" · ");
+      items.push({cat:"camion", id:e.id, date:e.date, title:e.nomCamion||"Camion", sub:sub, amount:-computeCamionTotal(e), amountLabel:"Dépense"});
+    });
+    data.depot.forEach(function(e){
+      items.push({cat:"depot", id:e.id, date:e.date, title:e.nom||"Dépôt", sub:"Avance reçue", amount:num(e.avance), amountLabel:"Encaissé"});
+    });
+    data.carriere.forEach(function(e){
+      items.push({cat:"carriere", id:e.id, date:e.date, title:e.nom||"Carrière", sub:"Avance versée", amount:-num(e.avance), amountLabel:"Payé"});
+    });
+    data.moi.forEach(function(e){
+      items.push({cat:"moi", id:e.id, date:e.date, title:e.camion||"Moi", sub:e.nomDepot?("Dépôt : "+e.nomDepot):"", amount:-computeVersementPaye(e), amountLabel:"Versement payé"});
+    });
+    data.journal.forEach(function(e){
+      items.push({cat:"journal", id:e.id, date:e.date, title:e.camionArrive||"Journal", sub:e.tonnage?(e.tonnage+" T"):"", amount:computeJournalReste(e), amountLabel:"Reste"});
+    });
+    data.transactions.forEach(function(e){
+      var sign = e.type==="depense" ? -1 : 1;
+      items.push({cat:"libre", id:e.id, date:e.date, title:e.description||(e.type==="depense"?"Dépense":"Recette"), sub:e.categorie||"", amount:sign*num(e.montant), amountLabel:e.type==="depense"?"Dépense":"Recette"});
+    });
+    items.sort(function(a,b){ return (b.date||"").localeCompare(a.date||""); });
+    return items;
+  }
+
+  function renderTransactions(){
+    var totalIn = 0, totalOut = 0;
+    data.depot.forEach(function(e){ totalIn += num(e.avance); });
+    data.transactions.forEach(function(e){ if(e.type==="recette") totalIn += num(e.montant); else totalOut += num(e.montant); });
+    data.camion.forEach(function(e){ totalOut += computeCamionTotal(e); });
+    data.carriere.forEach(function(e){ totalOut += num(e.avance); });
+    data.moi.forEach(function(e){ totalOut += computeVersementPaye(e); });
+    data.journal.forEach(function(e){ totalIn += num(e.entree) + num(e.autresCommission); totalOut += num(e.depenses); });
+
+    document.getElementById("tx-in").textContent = fmtMoney(totalIn);
+    document.getElementById("tx-out").textContent = fmtMoney(totalOut);
+    var solde = totalIn - totalOut;
+    var soldeEl = document.getElementById("tx-solde");
+    soldeEl.textContent = fmtMoney(solde);
+    soldeEl.className = "value " + (solde>=0 ? "good" : "critical");
+
+    var all = unifiedTransactions();
+    var filtered = txFilter==="tous" ? all : all.filter(function(i){ return i.cat===txFilter; });
+
+    var container = document.getElementById("tx-list");
+    container.innerHTML = "";
+    if(filtered.length===0){ container.innerHTML = emptyState("Aucune opération pour ce filtre."); return; }
+    filtered.forEach(function(i){
+      var meta = CATEGORY_META[i.cat];
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      var amountColor = i.amount>=0 ? "var(--good-text)" : "var(--critical)";
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+meta.icon+' '+esc(i.title)+'</span><span class="entry-date">'+fmtDate(i.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta">'+esc(i.sub||"")+'</span>'+
+        '<span class="entry-amounts" style="color:'+amountColor+';font-weight:700;">'+(i.amount>=0?"+":"")+fmtMoney(i.amount)+'</span></div>';
+      card.onclick = function(){
+        if(i.cat==="libre") openForm("transactions", i.id);
+        else openForm(i.cat, i.id);
+      };
+      container.appendChild(card);
+    });
+  }
+
+  function pill(reste){
+    if(reste>0.001) return fmtMoney(reste)+'<span class="pill reste-due">à payer</span>';
+    if(reste<-0.001) return fmtMoney(Math.abs(reste))+'<span class="pill reste-clear">en trop</span>';
+    return fmtMoney(0)+'<span class="pill reste-clear">soldé</span>';
+  }
+  function emptyState(msg){ return '<div class="empty-state">'+esc(msg)+'</div>'; }
+  function esc(s){
+    if(s===undefined || s===null) return "";
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* ---------- Tabs ---------- */
+  var TAB_TITLES = {
+    camion: ["Camion", "Suivi des voyages et dépenses"],
+    depot: ["Dépôt", "Suivi des ventes et avances"],
+    carriere: ["Carrière", "Suivi des achats et paiements"],
+    moi: ["Moi", "Calcul du versement à payer (poids, prix, pourcentage)"],
+    journal: ["Journal", "Entrées, dépenses et commissions au jour le jour"],
+    transactions: ["Mes Transactions", "Vue d'ensemble et journal complet"],
+    tsyhadino: ["TsyHadino", "Onglet indépendant — Reste, Prix, P.vary"],
+    chargement: ["Chargement", "Onglet indépendant — Poids/Gony, Prix, Avance"]
+  };
+  function switchTab(tab){
+    document.querySelectorAll(".tabpanel").forEach(function(p){ p.classList.remove("active"); });
+    document.getElementById("tab-"+tab).classList.add("active");
+    document.querySelectorAll("nav.bottomnav button").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===tab);
+    });
+    document.getElementById("pageTitle").textContent = TAB_TITLES[tab][0];
+    document.getElementById("pageSubtitle").textContent = TAB_TITLES[tab][1];
+    document.getElementById("fabAdd").title = tab==="transactions" ? "Ajouter une transaction libre" : "Ajouter";
+    currentTab = tab;
+  }
+  var currentTab = "camion";
+  document.querySelectorAll("nav.bottomnav button").forEach(function(b){
+    b.addEventListener("click", function(){ switchTab(b.getAttribute("data-tab")); });
+  });
+
+  /* ---------- Recherche globale ----------
+     Méthode : recherche par mots-clés (chaque mot doit être trouvé quelque part),
+     insensible aux accents et à la casse, sur tous les champs texte/nombre/date
+     de toutes les catégories (Camion, Dépôt, Carrière, Moi, Journal, Transactions,
+     TsyHadino, Chargement). */
+  function normalizeText(s){
+    return (s===undefined || s===null ? "" : String(s)).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  }
+  function tabForCat(cat){ return cat==="libre" ? "transactions" : cat; }
+
+  function buildSearchIndex(){
+    var items = [];
+    function pushItem(cat, id, title, sub, date, extraFields){
+      var blob = [title, sub, date].concat(extraFields||[]).map(normalizeText).join(" | ");
+      items.push({cat:cat, id:id, title:title||labelForCat(cat), sub:sub||"", date:date||"", blob:blob});
+    }
+    data.camion.forEach(function(e){
+      var statutTxt = e.statutPaiement==="paye" ? "Payé" : "Non payé";
+      pushItem("camion", e.id, e.nomCamion||"Camion", [e.chauffeur, statutTxt].filter(Boolean).join(" · "), e.date,
+        [e.chauffeur, e.carriereNom, e.nomDepot, statutTxt, e.dateArrivee, e.datePaiement, e.dateNonPaye, e.tonnage, e.deplacement, e.gasoil, e.frais]);
+    });
+    data.depot.forEach(function(e){
+      pushItem("depot", e.id, e.nom||"Dépôt", e.rendement||"", e.date, [e.rendement, e.total, e.avance]);
+    });
+    data.carriere.forEach(function(e){
+      pushItem("carriere", e.id, e.nom||"Carrière", [e.camion, e.objetCommission].filter(Boolean).join(" · "), e.date,
+        [e.camion, e.voiture, e.objetCommission, e.gony, e.prix, e.commission, e.avance]);
+    });
+    data.moi.forEach(function(e){
+      pushItem("moi", e.id, e.camion||"Moi", e.nomDepot||"", e.date, [e.nomDepot, e.tonnage, e.tonnagePlus, e.prix, e.pourcentage]);
+    });
+    data.journal.forEach(function(e){
+      pushItem("journal", e.id, e.camionArrive||"Journal", e.tonnage?(e.tonnage+" T"):"", e.date, [e.tonnage, e.entree, e.depenses, e.autresCommission]);
+    });
+    data.transactions.forEach(function(e){
+      pushItem("libre", e.id, e.description||(e.type==="depense"?"Dépense":"Recette"), e.categorie||"", e.date, [e.categorie, e.montant, e.type]);
+    });
+    data.tsyhadino.forEach(function(e){
+      pushItem("tsyhadino", e.id, e.objetCommission||"TsyHadino", e.reste?("Reste : "+fmtMoney(e.reste)):"", e.date, [e.objetCommission, e.reste, e.prix, e.pvary]);
+    });
+    data.chargement.forEach(function(e){
+      pushItem("chargement", e.id, e.nom||"Chargement", e.chargement||"", e.date, [e.nom, e.chargement, e.poidsGony, e.prix, e.avance]);
+    });
+    return items;
+  }
+
+  function runSearch(query){
+    var terms = normalizeText(query).trim().split(/\s+/).filter(Boolean);
+    if(terms.length===0) return [];
+    var items = buildSearchIndex();
+    var matched = items.filter(function(it){
+      return terms.every(function(t){ return it.blob.indexOf(t) !== -1; });
+    });
+    matched.sort(function(a,b){ return (b.date||"").localeCompare(a.date||""); });
+    return matched;
+  }
+
+  var searchInput = document.getElementById("searchInput");
+  var searchResultsEl = document.getElementById("searchResults");
+  var searchClearBtn = document.getElementById("searchClear");
+
+  function renderSearchResults(query){
+    var q = (query||"").trim();
+    searchClearBtn.style.display = q ? "block" : "none";
+    if(!q){ searchResultsEl.classList.remove("open"); searchResultsEl.innerHTML = ""; return; }
+    var results = runSearch(q);
+    searchResultsEl.innerHTML = "";
+    if(results.length===0){
+      searchResultsEl.innerHTML = '<div class="search-empty">Aucun résultat pour « '+esc(q)+' »</div>';
+    } else {
+      results.slice(0,50).forEach(function(r){
+        var meta = CATEGORY_META[r.cat];
+        var row = document.createElement("div");
+        row.className = "search-result-item";
+        row.innerHTML =
+          '<span class="search-result-icon">'+meta.icon+'</span>'+
+          '<span class="search-result-text">'+
+            '<div class="search-result-title">'+esc(r.title)+'</div>'+
+            '<div class="search-result-sub">'+esc(labelForCat(r.cat))+(r.sub?(" · "+esc(r.sub)):"")+'</div>'+
+          '</span>'+
+          '<span class="search-result-date">'+(r.date?fmtDate(r.date):"")+'</span>';
+        row.onclick = function(){
+          switchTab(tabForCat(r.cat));
+          openForm(tabForCat(r.cat), r.id);
+          searchInput.value = "";
+          renderSearchResults("");
+        };
+        searchResultsEl.appendChild(row);
+      });
+    }
+    searchResultsEl.classList.add("open");
+  }
+
+  searchInput.addEventListener("input", function(){ renderSearchResults(searchInput.value); });
+  searchInput.addEventListener("focus", function(){ if(searchInput.value.trim()) renderSearchResults(searchInput.value); });
+  searchClearBtn.addEventListener("click", function(){ searchInput.value=""; renderSearchResults(""); searchInput.focus(); });
+  searchInput.addEventListener("keydown", function(ev){
+    if(ev.key==="Escape"){ searchInput.value=""; renderSearchResults(""); searchInput.blur(); }
+  });
+  document.addEventListener("click", function(ev){
+    if(!ev.target.closest(".search-wrap")){ searchResultsEl.classList.remove("open"); }
+  });
+
+  document.querySelectorAll("#tx-filters .chip").forEach(function(c){
+    c.addEventListener("click", function(){
+      document.querySelectorAll("#tx-filters .chip").forEach(function(x){ x.classList.remove("active"); });
+      c.classList.add("active");
+      txFilter = c.getAttribute("data-filter");
+      renderTransactions();
+    });
+  });
+
+  /* ---------- Form modal ---------- */
+  var modalBackdrop = document.getElementById("modalBackdrop");
+  var modalTitle = document.getElementById("modalTitle");
+  var entryForm = document.getElementById("entryForm");
+  var editingCat = null, editingId = null;
+
+  function openForm(cat, id){
+    editingCat = cat;
+    editingId = id || null;
+    var isTx = cat === "transactions";
+    var isNew = !id;
+    modalTitle.textContent = (isNew ? "Ajouter — " : "Modifier — ") + labelForCat(cat);
+
+    var entry = null;
+    if(id){
+      entry = data[cat].find(function(x){ return x.id===id; });
+    }
+
+    var fields = isTx ? [
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"type", label:"Type", type:"select", options:[["recette","Recette (argent reçu)"],["depense","Dépense (argent sorti)"]], required:true},
+      {key:"description", label:"Description", type:"text", required:true},
+      {key:"categorie", label:"Catégorie (optionnel)", type:"text"},
+      {key:"montant", label:"Montant ("+DEVISE+")", type:"number", required:true}
+    ] : FIELDS[cat];
+
+    var html = "";
+    fields.forEach(function(f){
+      var val = entry ? (entry[f.key] !== undefined ? entry[f.key] : "") : (f.key==="date" ? todayISO() : "");
+      html += '<div class="field"><label>'+esc(f.label)+'</label>';
+      if(f.type==="select"){
+        html += '<select name="'+f.key+'"'+(f.required?" required":"")+'>';
+        f.options.forEach(function(o){
+          html += '<option value="'+o[0]+'"'+(val===o[0]?" selected":"")+'>'+esc(o[1])+'</option>';
+        });
+        html += '</select>';
+      } else {
+        html += '<input type="'+f.type+'" name="'+f.key+'" value="'+esc(val)+'"'+(f.required?" required":"")+(f.type==="number"?' step="any" inputmode="decimal"':'')+'>';
+      }
+      html += '</div>';
+      if(cat==="carriere" && f.key==="prix"){
+        html += '<div class="field"><label>Prix T.Gony (calculé automatiquement)</label><div class="computed" id="computedPrixTGony">'+fmtMoney(entry?computePrixTGony(entry):0)+'</div></div>';
+      }
+      if(cat==="chargement" && f.key==="prix"){
+        html += '<div class="field"><label>Total (calculé automatiquement)</label><div class="computed" id="computedChargementTotal">'+fmtMoney(entry?computeChargementTotal(entry):0)+'</div></div>';
+      }
+    });
+
+    if(cat==="depot"){
+      html += '<div class="field"><label>Reste (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeReste(cat, entry):0)+'</div></div>';
+    }
+    if(cat==="carriere"){
+      html += '<div class="field"><label>Reste à payer pour moi (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeReste(cat, entry):0)+'</div></div>';
+    }
+    if(cat==="camion"){
+      html += '<div class="field"><label>Total à payer (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeCamionTotal(entry):0)+'</div></div>';
+    }
+    if(cat==="moi"){
+      html += '<div class="field"><label>Tonnage Total (calculé automatiquement)</label><div class="computed" id="computedTonnageTotal">'+(entry?computeTonnageTotal(entry):0)+' kg</div></div>';
+      html += '<div class="field"><label>Versement Payé (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeVersementPaye(entry):0)+'</div></div>';
+    }
+    if(cat==="journal"){
+      html += '<div class="field"><label>Reste Total (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeJournalReste(entry):0)+'</div></div>';
+    }
+    if(cat==="tsyhadino"){
+      html += '<div class="field"><label>Total (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeTsyHadinoTotal(entry):0)+'</div></div>';
+    }
+    if(cat==="chargement"){
+      html += '<div class="field"><label>Reste à payer (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeChargementReste(entry):0)+'</div></div>';
+    }
+
+    html += '<div class="modal-actions">';
+    if(entry){ html += '<button type="button" class="btn danger" id="btnDelete">Supprimer</button>'; }
+    html += '<button type="submit" class="btn primary">Enregistrer</button>';
+    html += '</div>';
+
+    entryForm.innerHTML = html;
+    modalBackdrop.classList.add("open");
+
+    // live computed value
+    entryForm.querySelectorAll("input[type=number]").forEach(function(inp){
+      inp.addEventListener("input", updateComputed);
+    });
+    entryForm.querySelectorAll("select").forEach(function(sel){
+      sel.addEventListener("change", updateComputed);
+    });
+    function updateComputed(){
+      var computedEl = document.getElementById("computedReste");
+      if(!computedEl) return;
+      var fd = new FormData(entryForm);
+      var tmp = {};
+      fd.forEach(function(v,k){ tmp[k]=v; });
+      if(cat==="camion") computedEl.textContent = fmtMoney(computeCamionTotal(tmp));
+      else if(cat==="moi"){
+        computedEl.textContent = fmtMoney(computeVersementPaye(tmp));
+        var tonnageTotalEl = document.getElementById("computedTonnageTotal");
+        if(tonnageTotalEl) tonnageTotalEl.textContent = computeTonnageTotal(tmp) + " kg";
+      }
+      else if(cat==="journal") computedEl.textContent = fmtMoney(computeJournalReste(tmp));
+      else if(cat==="tsyhadino") computedEl.textContent = fmtMoney(computeTsyHadinoTotal(tmp));
+      else if(cat==="chargement"){
+        computedEl.textContent = fmtMoney(computeChargementReste(tmp));
+        var chargementTotalEl = document.getElementById("computedChargementTotal");
+        if(chargementTotalEl) chargementTotalEl.textContent = fmtMoney(computeChargementTotal(tmp));
+      }
+      else {
+        computedEl.textContent = fmtMoney(computeReste(cat, tmp));
+        if(cat==="carriere"){
+          var prixTGonyEl = document.getElementById("computedPrixTGony");
+          if(prixTGonyEl) prixTGonyEl.textContent = fmtMoney(computePrixTGony(tmp));
+        }
+      }
+    }
+
+    var delBtn = document.getElementById("btnDelete");
+    if(delBtn){
+      delBtn.onclick = function(){
+        if(confirm("Supprimer cette entrée ?")){
+          data[cat] = data[cat].filter(function(x){ return x.id!==editingId; });
+          save(); renderAll(); closeModal();
+          showToast("Entrée supprimée");
+        }
+      };
+    }
+  }
+
+  function labelForCat(cat){
+    return {camion:"Camion", depot:"Dépôt", carriere:"Carrière", moi:"Moi", journal:"Journal", transactions:"Transaction libre", tsyhadino:"TsyHadino", chargement:"Chargement"}[cat];
+  }
+
+  entryForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd = new FormData(entryForm);
+    var obj = {};
+    fd.forEach(function(v,k){ obj[k]=v; });
+    if(editingId){
+      var idx = data[editingCat].findIndex(function(x){ return x.id===editingId; });
+      obj.id = editingId;
+      data[editingCat][idx] = obj;
+    } else {
+      obj.id = uid();
+      data[editingCat].push(obj);
+    }
+    save();
+    renderAll();
+    closeModal();
+    showToast("Enregistré ✓");
+  });
+
+  function closeModal(){
+    modalBackdrop.classList.remove("open");
+    editingCat = null; editingId = null;
+  }
+  modalBackdrop.addEventListener("click", function(ev){
+    if(ev.target===modalBackdrop) closeModal();
+  });
+
+  document.getElementById("fabAdd").addEventListener("click", function(){
+    if(currentTab==="transactions") openForm("transactions", null);
+    else openForm(currentTab, null);
+  });
+
+  /* ---------- Data management ---------- */
+  document.getElementById("btn-export-json").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "suivi-carriere-sauvegarde-"+todayISO()+".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast("Fichier de sauvegarde téléchargé");
+  });
+
+  document.getElementById("btn-import-json").addEventListener("click", function(){
+    document.getElementById("import-file-input").click();
+  });
+  document.getElementById("import-file-input").addEventListener("change", function(ev){
+    var file = ev.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var parsed = JSON.parse(reader.result);
+        if(!confirm("Remplacer toutes les données actuelles par celles du fichier ?")) return;
+        ["camion","depot","carriere","moi","journal","transactions","tsyhadino","chargement"].forEach(function(k){
+          data[k] = Array.isArray(parsed[k]) ? parsed[k] : [];
+        });
+        save(); renderAll();
+        showToast("Données restaurées ✓");
+      }catch(e){
+        alert("Fichier invalide. Choisis un fichier de sauvegarde exporté depuis cette application.");
+      }
+    };
+    reader.readAsText(file);
+    ev.target.value = "";
+  });
+
+  document.getElementById("btn-export-csv").addEventListener("click", function(){
+    var rows = [["Categorie","Date","Nom/Titre","Detail","Montant"]];
+    unifiedTransactions().forEach(function(i){
+      rows.push([i.cat, i.date, i.title, i.sub, i.amount]);
+    });
+    var csv = rows.map(function(r){
+      return r.map(function(c){
+        c = c===undefined||c===null ? "" : String(c);
+        if(c.indexOf(",")>-1 || c.indexOf('"')>-1){ c = '"'+c.replace(/"/g,'""')+'"'; }
+        return c;
+      }).join(",");
+    }).join("\n");
+    var blob = new Blob(["﻿"+csv], {type:"text/csv;charset=utf-8"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "suivi-carriere-"+todayISO()+".csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast("CSV exporté");
+  });
+
+  document.getElementById("btn-reset").addEventListener("click", function(){
+    if(confirm("Attention : toutes les données seront supprimées définitivement. Continuer ?")){
+      if(confirm("Es-tu sûr(e) ? Cette action est irréversible. Pense à faire une sauvegarde avant.")){
+        data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        save(); renderAll();
+        showToast("Toutes les données ont été effacées");
+      }
+    }
+  });
+
+  /* ---------- Layout mode (phone vs tablet) ----------
+     Computed from window.innerWidth in JS rather than a CSS media query, because some
+     Android browsers (in-app file viewers especially) apply @media viewport rules
+     inconsistently. window.innerWidth is basic and reliable everywhere. */
+  var TABLET_BREAKPOINT = 620;
+  function applyLayoutMode(){
+    var w = window.innerWidth || document.documentElement.clientWidth || 0;
+    document.body.classList.toggle("tablet", w >= TABLET_BREAKPOINT);
+  }
+  var layoutResizeTimer = null;
+  function scheduleLayoutMode(){
+    clearTimeout(layoutResizeTimer);
+    layoutResizeTimer = setTimeout(applyLayoutMode, 120);
+  }
+  window.addEventListener("resize", scheduleLayoutMode);
+  window.addEventListener("orientationchange", scheduleLayoutMode);
+
+  /* ---------- Init ---------- */
+  applyLayoutMode();
+  load();
+  renderAll();
+  switchTab("camion");
+  if(!storageOK){
+    showToast("⚠️ Mode sans sauvegarde — exporte tes données régulièrement");
+  }
+
+  /* ---------- PWA : service worker (fonctionnement hors-ligne + installation) ---------- */
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("service-worker.js").catch(function(){
+        /* pas grave si ça échoue (ex: ouverture en file:// sans hébergement) — l'app marche quand même */
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
