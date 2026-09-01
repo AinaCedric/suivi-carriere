@@ -1,6 +1,6 @@
 // Service worker — met l'application en cache pour qu'elle fonctionne hors-ligne.
 // Pour publier une mise à jour de l'app : changer CACHE_NAME (ex: "v2"), redéployer les fichiers.
-const CACHE_NAME = "suivi-carriere-v1";
+const CACHE_NAME = "suivi-carriere-v2";
 const CORE_FILES = [
   "./",
   "./index.html",
