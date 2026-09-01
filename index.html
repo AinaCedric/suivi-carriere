@@ -98,6 +98,14 @@
     border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.18);
     max-height:min(60vh,420px); overflow-y:auto; z-index:40; display:none;
   }
+  .install-btn{
+    display:none; align-items:center; justify-content:center; gap:8px; width:100%;
+    margin-top:10px; padding:10px 14px; border-radius:10px; border:none;
+    background:var(--series-camion); color:#fff; font-size:13.5px; font-weight:700;
+    font-family:inherit; cursor:pointer;
+  }
+  .install-btn.show{ display:flex; }
+  .install-btn:active{ opacity:0.85; }
   .search-results.open{ display:block; }
   .search-result-item{
     display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer;
@@ -241,6 +249,7 @@
   body.tablet{ padding-bottom:0; padding-left:104px; }
   body.tablet header.topbar{ padding-left:28px; }
   body.tablet .search-wrap{ max-width:420px; }
+  body.tablet .install-btn{ max-width:420px; }
   body.tablet main{ max-width:920px; padding:22px 28px 40px; margin:0; }
   body.tablet .stats-grid{ grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); }
 
@@ -271,6 +280,7 @@
     <button type="button" class="search-clear" id="searchClear" title="Effacer">✕</button>
     <div class="search-results" id="searchResults"></div>
   </div>
+  <button type="button" class="install-btn" id="installBtn">📲 Installer l'application</button>
 </header>
 
 <main>
@@ -1254,6 +1264,57 @@
         /* pas grave si ça échoue (ex: ouverture en file:// sans hébergement) — l'app marche quand même */
       });
     });
+  }
+
+  /* ---------- Bouton "Installer l'application" (fixe dans l'interface) ---------- */
+  var installBtn = document.getElementById("installBtn");
+  var deferredInstallPrompt = null;
+
+  function isStandalone(){
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+  var isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+
+  function showInstallBtn(){
+    if(!isStandalone()) installBtn.classList.add("show");
+  }
+  function hideInstallBtn(){
+    installBtn.classList.remove("show");
+  }
+
+  // Chrome / Edge / Android : le navigateur propose un prompt d'installation natif
+  window.addEventListener("beforeinstallprompt", function(ev){
+    ev.preventDefault();
+    deferredInstallPrompt = ev;
+    showInstallBtn();
+  });
+
+  window.addEventListener("appinstalled", function(){
+    deferredInstallPrompt = null;
+    hideInstallBtn();
+    showToast("Application installée ✅");
+  });
+
+  installBtn.addEventListener("click", function(){
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(function(){
+        deferredInstallPrompt = null;
+        hideInstallBtn();
+      });
+    } else if(isIOS){
+      showToast("Sur iPhone : appuie sur Partager, puis « Sur l'écran d'accueil »");
+    } else {
+      showToast("Utilise le menu du navigateur (⋮) puis « Installer l'application »");
+    }
+  });
+
+  // Si le navigateur ne déclenche jamais beforeinstallprompt (Safari iOS notamment),
+  // le bouton reste quand même visible pour guider l'utilisateur — sauf si déjà installée.
+  if(!isStandalone()){
+    setTimeout(function(){
+      if(!deferredInstallPrompt) showInstallBtn();
+    }, 800);
   }
 })();
 </script>
