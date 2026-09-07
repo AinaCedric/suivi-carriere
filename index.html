@@ -6,58 +6,107 @@
 <title>Suivi Carrière</title>
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2a78d6">
+<meta name="theme-color" content="#3b6fed">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Suivi Carrière">
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem("suivi_carriere_theme");
+    if(t === "dark" || t === "light"){ document.documentElement.setAttribute("data-theme", t); }
+  }catch(e){}
+})();
+</script>
 <style>
   :root{
     color-scheme: light;
-    --surface-1:#fcfcfb;
-    --page:#f9f9f7;
-    --text-primary:#0b0b0b;
-    --text-secondary:#52514e;
-    --muted:#898781;
-    --gridline:#e1e0d9;
-    --border:rgba(11,11,11,0.10);
-    --series-camion:#2a78d6;
-    --series-depot:#eb6834;
-    --series-carriere:#1baf7a;
-    --series-transactions:#4a3aa7;
-    --series-moi:#eda100;
-    --series-journal:#e87ba4;
-    --series-tsyhadino:#008300;
-    --series-chargement:#e34948;
-    --good:#0ca30c;
-    --good-text:#006300;
-    --critical:#d03b3b;
-    --warning:#eda100;
-    --radius:14px;
+    --surface-1:#ffffff;
+    --surface-2:#f7f8fa;
+    --page:#f2f3f7;
+    --text-primary:#14161a;
+    --text-secondary:#5b616e;
+    --muted:#8a8f99;
+    --gridline:#e8e9ee;
+    --border:rgba(20,22,26,0.08);
+    --series-camion:#3b6fed;
+    --series-depot:#f0793f;
+    --series-carriere:#16a673;
+    --series-transactions:#7c3aed;
+    --series-moi:#f2a30f;
+    --series-journal:#ec6fa0;
+    --series-tsyhadino:#0f9d33;
+    --series-chargement:#ef4444;
+    --good:#16a34a;
+    --good-text:#15803d;
+    --critical:#dc2626;
+    --warning:#f59e0b;
+    --brand-dark:#2451c9;
+    --brand-soft:rgba(59,111,237,.12);
+    --brand-grad:linear-gradient(135deg, var(--series-camion), var(--brand-dark));
+    --radius:16px;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.08);
+    --shadow-md:0 6px 18px rgba(16,24,40,.10);
+    --shadow-lg:0 22px 48px rgba(16,24,40,.22);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       color-scheme: dark;
-      --surface-1:#1a1a19;
-      --page:#0d0d0d;
-      --text-primary:#ffffff;
-      --text-secondary:#c3c2b7;
-      --muted:#898781;
-      --gridline:#2c2c2a;
-      --border:rgba(255,255,255,0.10);
-      --series-camion:#3987e5;
-      --series-depot:#d95926;
-      --series-carriere:#199e70;
-      --series-transactions:#9085e9;
-      --series-moi:#c98500;
-      --series-journal:#d55181;
-      --series-tsyhadino:#008300;
-      --series-chargement:#e66767;
-      --good:#0ca30c;
-      --good-text:#0ca30c;
-      --critical:#e66767;
-      --warning:#c98500;
+      --surface-1:#1c1e24;
+      --surface-2:#22242b;
+      --page:#121317;
+      --text-primary:#f2f3f5;
+      --text-secondary:#b4b8c2;
+      --muted:#7d8290;
+      --gridline:#2a2d34;
+      --border:rgba(255,255,255,0.09);
+      --series-camion:#5b8bff;
+      --series-depot:#f28a52;
+      --series-carriere:#22b483;
+      --series-transactions:#9466f0;
+      --series-moi:#f5b52e;
+      --series-journal:#f082ab;
+      --series-tsyhadino:#1fb84a;
+      --series-chargement:#f16565;
+      --good:#22c55e;
+      --good-text:#4ade80;
+      --critical:#f16565;
+      --warning:#f5b52e;
+      --brand-dark:#3f6fe0;
+      --brand-soft:rgba(91,139,255,.18);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+      --shadow-md:0 10px 24px rgba(0,0,0,.4);
+      --shadow-lg:0 26px 55px rgba(0,0,0,.55);
     }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --surface-1:#1c1e24;
+    --surface-2:#22242b;
+    --page:#121317;
+    --text-primary:#f2f3f5;
+    --text-secondary:#b4b8c2;
+    --muted:#7d8290;
+    --gridline:#2a2d34;
+    --border:rgba(255,255,255,0.09);
+    --series-camion:#5b8bff;
+    --series-depot:#f28a52;
+    --series-carriere:#22b483;
+    --series-transactions:#9466f0;
+    --series-moi:#f5b52e;
+    --series-journal:#f082ab;
+    --series-tsyhadino:#1fb84a;
+    --series-chargement:#f16565;
+    --good:#22c55e;
+    --good-text:#4ade80;
+    --critical:#f16565;
+    --warning:#f5b52e;
+    --brand-dark:#3f6fe0;
+    --brand-soft:rgba(91,139,255,.18);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+    --shadow-md:0 10px 24px rgba(0,0,0,.4);
+    --shadow-lg:0 26px 55px rgba(0,0,0,.55);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -66,28 +115,43 @@
     background:var(--page);
     color:var(--text-primary);
     -webkit-font-smoothing:antialiased;
-    padding-bottom:76px;
+    -webkit-tap-highlight-color:transparent;
+    padding-bottom:84px;
+  }
+  body, header.topbar, .entry-card, .stat-tile, nav.bottomnav, .modal, .chip, .install-btn,
+  .search-wrap input, .field input, .field select, .field textarea, .datamgmt, .theme-toggle{
+    transition:background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
   }
   header.topbar{
     position:sticky; top:0; z-index:20;
     background:var(--surface-1);
-    border-bottom:1px solid var(--border);
+    box-shadow:var(--shadow-sm);
     padding:14px 16px 12px;
   }
+  .topbar-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .topbar-heading{ min-width:0; }
   header.topbar h1{
-    font-size:17px; margin:0 0 2px; font-weight:700;
+    font-size:19px; margin:0 0 2px; font-weight:800; letter-spacing:-0.02em;
+    background:var(--brand-grad); -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   header.topbar .subtitle{
     font-size:12.5px; color:var(--text-secondary); margin:0;
   }
+  .theme-toggle{
+    flex:none; width:38px; height:38px; border-radius:50%; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-primary); font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .theme-toggle:active{ transform:scale(.9); }
   .search-wrap{ position:relative; margin-top:10px; }
   .search-wrap input{
-    width:100%; padding:9px 34px 9px 32px; border-radius:10px; border:1px solid var(--border);
-    background:var(--page); color:var(--text-primary); font-size:14px; font-family:inherit;
+    width:100%; padding:10px 34px 10px 34px; border-radius:14px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-primary); font-size:14px; font-family:inherit;
+    box-shadow:var(--shadow-sm);
   }
   .search-wrap input:focus{ outline:2px solid var(--series-camion); outline-offset:-1px; }
   .search-wrap .search-icon{
-    position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--muted); pointer-events:none;
+    position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--muted); pointer-events:none;
   }
   .search-wrap .search-clear{
     position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none;
@@ -95,24 +159,32 @@
   }
   .search-results{
     position:absolute; left:0; right:0; top:calc(100% + 6px); background:var(--surface-1);
-    border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.18);
+    border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-lg);
     max-height:min(60vh,420px); overflow-y:auto; z-index:40; display:none;
   }
   .install-btn{
-    display:none; align-items:center; justify-content:center; gap:8px; width:100%;
-    margin-top:10px; padding:10px 14px; border-radius:10px; border:none;
-    background:var(--series-camion); color:#fff; font-size:13.5px; font-weight:700;
-    font-family:inherit; cursor:pointer;
+    display:none; align-items:stretch; width:100%; margin-top:10px;
+    border-radius:14px; overflow:hidden; background:var(--brand-grad); box-shadow:var(--shadow-md);
   }
   .install-btn.show{ display:flex; }
-  .install-btn:active{ opacity:0.85; }
+  .install-btn-action{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 8px; border:none; background:none; color:#fff; font-size:13.5px;
+    font-weight:700; font-family:inherit; cursor:pointer;
+  }
+  .install-btn-action:active{ opacity:0.85; }
+  .install-btn-close{
+    flex:none; width:40px; border:none; border-left:1px solid rgba(255,255,255,.25);
+    background:none; color:#fff; font-size:15px; cursor:pointer;
+  }
+  .install-btn-close:active{ background:rgba(255,255,255,.15); }
   .search-results.open{ display:block; }
   .search-result-item{
     display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer;
     border-bottom:1px solid var(--gridline);
   }
   .search-result-item:last-child{ border-bottom:none; }
-  .search-result-item:hover, .search-result-item:active{ background:var(--page); }
+  .search-result-item:hover, .search-result-item:active{ background:var(--surface-2); }
   .search-result-icon{ font-size:18px; flex:none; }
   .search-result-text{ flex:1; min-width:0; }
   .search-result-title{ font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -122,7 +194,8 @@
   main{ padding:14px 14px 24px; max-width:640px; margin:0 auto; }
 
   .tabpanel{ display:none; }
-  .tabpanel.active{ display:block; }
+  .tabpanel.active{ display:block; animation:fadeUp .22s ease; }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
 
   /* Stat tiles */
   .stats-grid{
@@ -130,10 +203,12 @@
   }
   .stat-tile{
     background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius);
-    padding:12px 12px;
+    padding:14px 14px; box-shadow:var(--shadow-sm);
   }
+  .stat-tile:has(.value.good){ background:linear-gradient(180deg, rgba(22,163,74,.08), var(--surface-1) 65%); }
+  .stat-tile:has(.value.critical){ background:linear-gradient(180deg, rgba(220,38,38,.07), var(--surface-1) 65%); }
   .stat-tile .label{ font-size:11.5px; color:var(--text-secondary); margin-bottom:4px; }
-  .stat-tile .value{ font-size:19px; font-weight:700; font-variant-numeric: proportional-nums; }
+  .stat-tile .value{ font-size:21px; font-weight:800; letter-spacing:-0.01em; font-variant-numeric: proportional-nums; }
   .stat-tile .value.good{ color:var(--good-text); }
   .stat-tile .value.critical{ color:var(--critical); }
 
@@ -144,93 +219,142 @@
     margin:18px 2px 8px;
   }
   .entry-card{
-    background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius);
+    background:var(--surface-1); border:1px solid var(--border); border-left:3px solid var(--border);
+    border-radius:var(--radius); box-shadow:var(--shadow-sm);
     padding:12px 14px; margin-bottom:10px; cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, background-color .2s ease, border-color .2s ease;
   }
-  .entry-card:active{ opacity:.85; }
+  .entry-card:active{ transform:scale(.98); box-shadow:var(--shadow-sm); }
+  #tab-camion .entry-card{ border-left-color:var(--series-camion); }
+  #tab-depot .entry-card{ border-left-color:var(--series-depot); }
+  #tab-carriere .entry-card{ border-left-color:var(--series-carriere); }
+  #tab-moi .entry-card{ border-left-color:var(--series-moi); }
+  #tab-journal .entry-card{ border-left-color:var(--series-journal); }
+  #tab-tsyhadino .entry-card{ border-left-color:var(--series-tsyhadino); }
+  #tab-chargement .entry-card{ border-left-color:var(--series-chargement); }
   .entry-row1{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
   .entry-name{ font-weight:700; font-size:15px; }
   .entry-date{ font-size:12px; color:var(--muted); white-space:nowrap; }
   .entry-row2{ display:flex; justify-content:space-between; align-items:center; margin-top:6px; gap:8px; flex-wrap:wrap; }
-  .entry-meta{ font-size:12.5px; color:var(--text-secondary); }
-  .entry-amounts{ font-size:12.5px; color:var(--text-secondary); text-align:right; }
+  .entry-meta{
+    font-size:12.5px; color:var(--text-secondary); flex:1 1 auto; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .entry-amounts{ font-size:12.5px; color:var(--text-secondary); text-align:right; flex:none; white-space:nowrap; }
+  .entry-row3{ margin-top:6px; }
   .pill{
     display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px;
     margin-left:6px;
   }
-  .pill.reste-due{ background:rgba(208,59,59,.12); color:var(--critical); }
-  .pill.reste-clear{ background:rgba(12,163,12,.12); color:var(--good-text); }
+  .pill.reste-due{ background:rgba(220,38,38,.12); color:var(--critical); }
+  .pill.reste-clear{ background:rgba(22,163,74,.12); color:var(--good-text); }
   .empty-state{
     text-align:center; color:var(--muted); font-size:13.5px; padding:36px 12px;
   }
 
   /* Filter chips (Mes Transactions) */
+  .chip-row-wrap{ position:relative; }
+  .chip-row-wrap::after{
+    content:""; position:absolute; top:0; right:0; bottom:4px; width:28px;
+    background:linear-gradient(to right, transparent, var(--page)); pointer-events:none;
+  }
+  body.tablet .chip-row-wrap::after{ display:none; }
   .chip-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; }
   .chip{
     flex:none; border:1px solid var(--border); background:var(--surface-1);
     color:var(--text-secondary); font-size:12.5px; font-weight:600;
     padding:7px 13px; border-radius:99px; cursor:pointer; white-space:nowrap;
   }
-  .chip.active{ background:var(--text-primary); color:var(--surface-1); border-color:var(--text-primary); }
+  .chip.active{ background:var(--brand-grad); color:#fff; border-color:transparent; box-shadow:0 3px 10px var(--brand-soft); }
 
   /* Bottom nav (phone) */
   nav.bottomnav{
     position:fixed; left:0; right:0; bottom:0; top:auto; width:auto; z-index:30;
-    display:flex; flex-direction:row; background:var(--surface-1); border-top:1px solid var(--border);
+    display:flex; flex-direction:row; background:var(--surface-1);
+    box-shadow:0 -6px 20px rgba(16,24,40,.08);
+    border-radius:20px 20px 0 0;
     border-right:none; padding:6px 4px 10px; overflow:visible;
   }
   nav.bottomnav button{
-    flex:1; background:none; border:none; border-radius:0; display:flex; flex-direction:column; align-items:center;
-    gap:2px; padding:6px 2px; color:var(--muted); font-size:11px; font-family:inherit; cursor:pointer;
+    flex:1; background:none; border:none; border-radius:14px; display:flex; flex-direction:column; align-items:center;
+    gap:2px; margin:2px; padding:6px 2px; color:var(--muted); font-size:11px; font-family:inherit; cursor:pointer;
   }
   nav.bottomnav button .icon{ font-size:20px; line-height:1; }
-  nav.bottomnav button.active{ color:var(--text-primary); font-weight:700; }
+  nav.bottomnav button.active{ color:var(--series-camion); font-weight:700; background:var(--brand-soft); }
   nav.bottomnav button.nav-sep{ border-left:1px solid var(--border); margin-left:4px; padding-left:8px; }
   nav.bottomnav button.active .icon{ filter:none; }
+  /* Phone : Camion..Transactions + un bouton "Plus" ; TsyHadino/Chargement passent dans un petit menu */
+  body:not(.tablet) nav.bottomnav button.nav-extra{ display:none; }
+  nav.bottomnav button.nav-more{ display:none; }
+  body:not(.tablet) nav.bottomnav button.nav-more{ display:flex; }
+  body.tablet .nav-more-popover{ display:none !important; }
+  .nav-more-popover{
+    position:absolute; right:6px; bottom:calc(100% + 8px); background:var(--surface-1);
+    border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-lg);
+    display:none; flex-direction:column; overflow:hidden; min-width:170px; z-index:35;
+  }
+  .nav-more-popover.open{ display:flex; }
+  .nav-more-popover button{
+    display:flex; align-items:center; gap:10px; padding:12px 14px; background:none; border:none;
+    font-family:inherit; font-size:13.5px; color:var(--text-primary); cursor:pointer; text-align:left;
+  }
+  .nav-more-popover button:not(:last-child){ border-bottom:1px solid var(--gridline); }
+  .nav-more-popover button:active{ background:var(--surface-2); }
+  .nav-more-popover button.active{ font-weight:700; color:var(--series-camion); }
+  .nav-more-popover .icon{ font-size:17px; }
 
   /* Floating add button */
   .fab{
     position:fixed; right:18px; bottom:86px; z-index:25;
-    width:54px; height:54px; border-radius:50%; border:none;
-    background:var(--text-primary); color:var(--surface-1);
-    font-size:26px; box-shadow:0 4px 14px rgba(0,0,0,.25);
+    width:56px; height:56px; border-radius:50%; border:none;
+    background:var(--brand-grad); color:#fff;
+    font-size:26px; box-shadow:0 10px 24px var(--brand-soft), var(--shadow-md);
     display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:transform .15s ease;
   }
+  .fab:active{ transform:scale(.9); }
 
   /* Modal — always a centered dialog, sized against the backdrop (not vh, to dodge mobile-browser viewport quirks) */
   .modal-backdrop{
-    position:fixed; top:0; right:0; bottom:0; left:0; background:rgba(0,0,0,.45); z-index:50;
+    position:fixed; top:0; right:0; bottom:0; left:0; background:rgba(10,12,18,.5); z-index:50;
     display:none; align-items:center; justify-content:center; padding:20px;
+    -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
   }
   .modal-backdrop.open{ display:flex; }
   .modal{
     background:var(--surface-1); width:100%; max-width:520px; max-height:100%; overflow-y:auto;
-    border-radius:20px; padding:18px 18px 22px;
+    border-radius:24px; padding:18px 18px 22px; box-shadow:var(--shadow-lg);
+    animation:modalIn .18s ease;
   }
-  .modal h2{ margin:0 0 14px; font-size:17px; }
+  @keyframes modalIn{ from{ opacity:0; transform:translateY(14px) scale(.98);} to{ opacity:1; transform:translateY(0) scale(1);} }
+  .modal h2{ margin:0 0 14px; font-size:17px; font-weight:800; }
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
   .field input, .field select, .field textarea{
-    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border);
-    background:var(--page); color:var(--text-primary); font-size:15px; font-family:inherit;
+    width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-primary); font-size:15px; font-family:inherit;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:2px solid var(--series-camion); outline-offset:-1px;
   }
   .field .computed{
-    padding:11px 12px; border-radius:10px; background:var(--page); border:1px dashed var(--border);
+    padding:11px 12px; border-radius:12px; background:var(--brand-soft); border:1px dashed var(--series-camion);
     font-size:15px; font-weight:700;
   }
   .modal-actions{ display:flex; gap:10px; margin-top:6px; }
   .btn{
-    flex:1; padding:13px; border-radius:10px; border:none; font-size:14.5px; font-weight:700;
-    font-family:inherit; cursor:pointer;
+    flex:1; padding:13px; border-radius:12px; border:none; font-size:14.5px; font-weight:700;
+    font-family:inherit; cursor:pointer; transition:transform .1s ease;
   }
-  .btn.primary{ background:var(--text-primary); color:var(--surface-1); }
-  .btn.secondary{ background:var(--page); color:var(--text-primary); border:1px solid var(--border); }
-  .btn.danger{ background:rgba(208,59,59,.12); color:var(--critical); }
+  .btn:active{ transform:scale(.97); }
+  .btn.primary{ background:var(--brand-grad); color:#fff; box-shadow:0 6px 16px var(--brand-soft); }
+  .btn.secondary{ background:var(--surface-2); color:var(--text-primary); border:1px solid var(--border); }
+  .btn.danger{ background:rgba(220,38,38,.12); color:var(--critical); }
   .btn.full{ width:100%; }
 
   .datamgmt{
     background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius);
-    padding:14px; margin-top:22px;
+    padding:14px; margin-top:22px; box-shadow:var(--shadow-sm);
   }
   .datamgmt h3{ font-size:13px; margin:0 0 10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.03em; }
   .datamgmt .row{ display:flex; gap:8px; margin-bottom:8px; }
@@ -238,7 +362,7 @@
   .toast{
     position:fixed; left:50%; transform:translateX(-50%); bottom:96px; z-index:60;
     background:var(--text-primary); color:var(--surface-1); padding:10px 18px; border-radius:99px;
-    font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s;
+    font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s; box-shadow:var(--shadow-lg);
   }
   .toast.show{ opacity:1; }
   input[type=file]{ display:none; }
@@ -256,7 +380,8 @@
   body.tablet nav.bottomnav{
     left:0; right:auto; top:0; bottom:0; width:104px;
     flex-direction:column; justify-content:flex-start; gap:6px;
-    border-top:none; border-right:1px solid var(--border);
+    box-shadow:6px 0 20px rgba(16,24,40,.06);
+    border-radius:0 20px 20px 0;
     padding:24px 8px; overflow-y:auto;
   }
   body.tablet nav.bottomnav button{ flex:none; padding:12px 4px; border-radius:12px; }
@@ -265,22 +390,34 @@
 
   body.tablet .fab{ right:32px; bottom:32px; }
   body.tablet .toast{ left:calc(104px + (100% - 104px)/2); bottom:32px; }
-  body.tablet .modal{ max-width:560px; }
+  body.tablet .modal{ max-width:720px; }
+  body.tablet #entryForm{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+  body.tablet #entryForm .field:has(.computed){ grid-column:1/-1; }
+  body.tablet #entryForm .field:has(select){ grid-column:1/-1; }
+  body.tablet #entryForm .modal-actions{ grid-column:1/-1; }
   body.tablet .chip-row{ flex-wrap:wrap; overflow-x:visible; }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <h1 id="pageTitle">Suivi Carrière</h1>
-  <p class="subtitle" id="pageSubtitle">Gestion des comptes — hors-ligne, sur cet appareil</p>
+  <div class="topbar-row">
+    <div class="topbar-heading">
+      <h1 id="pageTitle">Suivi Carrière</h1>
+      <p class="subtitle" id="pageSubtitle">Gestion des comptes — hors-ligne, sur cet appareil</p>
+    </div>
+    <button type="button" class="theme-toggle" id="themeToggle" title="Changer d'apparence" aria-label="Changer d'apparence">🌙</button>
+  </div>
   <div class="search-wrap">
     <span class="search-icon">🔎</span>
     <input type="text" id="searchInput" placeholder="Rechercher (nom, camion, dépôt, carrière...)" autocomplete="off">
     <button type="button" class="search-clear" id="searchClear" title="Effacer">✕</button>
     <div class="search-results" id="searchResults"></div>
   </div>
-  <button type="button" class="install-btn" id="installBtn">📲 Installer l'application</button>
+  <div class="install-btn" id="installBtn">
+    <button type="button" class="install-btn-action" id="installBtnAction">📲 Installer l'application</button>
+    <button type="button" class="install-btn-close" id="installBtnClose" title="Masquer" aria-label="Masquer">✕</button>
+  </div>
 </header>
 
 <main>
@@ -343,14 +480,16 @@
       <div class="stat-tile" style="grid-column:1/-1;"><div class="label">Solde de caisse (estimation)</div><div class="value" id="tx-solde">0 Ar</div></div>
     </div>
 
-    <div class="chip-row" id="tx-filters">
-      <button class="chip active" data-filter="tous">Tous</button>
-      <button class="chip" data-filter="camion">🚛 Camion</button>
-      <button class="chip" data-filter="depot">🏭 Dépôt</button>
-      <button class="chip" data-filter="carriere">⛏️ Carrière</button>
-      <button class="chip" data-filter="moi">👤 Moi</button>
-      <button class="chip" data-filter="journal">📓 Journal</button>
-      <button class="chip" data-filter="libre">📝 Libres</button>
+    <div class="chip-row-wrap">
+      <div class="chip-row" id="tx-filters">
+        <button class="chip active" data-filter="tous">Tous</button>
+        <button class="chip" data-filter="camion">🚛 Camion</button>
+        <button class="chip" data-filter="depot">🏭 Dépôt</button>
+        <button class="chip" data-filter="carriere">⛏️ Carrière</button>
+        <button class="chip" data-filter="moi">👤 Moi</button>
+        <button class="chip" data-filter="journal">📓 Journal</button>
+        <button class="chip" data-filter="libre">📝 Libres</button>
+      </div>
     </div>
 
     <div class="section-title">Historique de toutes les opérations</div>
@@ -403,8 +542,13 @@
   <button data-tab="moi"><span class="icon">👤</span>Moi</button>
   <button data-tab="journal"><span class="icon">📓</span>Journal</button>
   <button data-tab="transactions"><span class="icon">📒</span>Transactions</button>
-  <button data-tab="tsyhadino" class="nav-sep"><span class="icon">📌</span>TsyHadino</button>
-  <button data-tab="chargement"><span class="icon">📦</span>Chargement</button>
+  <button type="button" class="nav-more" id="navMoreBtn"><span class="icon">⋯</span>Plus</button>
+  <button data-tab="tsyhadino" class="nav-sep nav-extra"><span class="icon">📌</span>TsyHadino</button>
+  <button data-tab="chargement" class="nav-extra"><span class="icon">📦</span>Chargement</button>
+  <div class="nav-more-popover" id="navMorePopover">
+    <button type="button" data-tab="tsyhadino"><span class="icon">📌</span>TsyHadino</button>
+    <button type="button" data-tab="chargement"><span class="icon">📦</span>Chargement</button>
+  </div>
 </nav>
 
 <!-- Modal -->
@@ -626,14 +770,15 @@
       var card = document.createElement("div");
       card.className = "entry-card";
       var meta = [e.chauffeur, e.tonnage?e.tonnage+" T":"", e.dateArrivee?("Arrivée : "+fmtDate(e.dateArrivee)):"", e.carriereNom?("Carrière : "+e.carriereNom):"", e.nomDepot?("Dépôt : "+e.nomDepot):""].filter(Boolean).map(esc).join(" · ");
-      if(e.deplacementPayePar==="moi"){ meta += ' <span class="pill reste-due">déplacement payé par Moi</span>'; }
+      var deplacementBadge = e.deplacementPayePar==="moi" ? '<div class="entry-row3"><span class="pill reste-due">Déplacement payé par Moi</span></div>' : "";
       var statutPill = e.statutPaiement==="paye"
         ? ' <span class="pill reste-clear">Payé'+(e.datePaiement?(" · "+fmtDate(e.datePaiement)):"")+'</span>'
         : ' <span class="pill reste-due">Non payé'+(e.dateNonPaye?(" · "+fmtDate(e.dateNonPaye)):"")+'</span>';
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.nomCamion||"Camion")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
-        '<span class="entry-amounts" style="color:'+(total>=0?"var(--critical)":"var(--good-text)")+';font-weight:700;">'+fmtMoney(total)+statutPill+'</span></div>';
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
+        '<span class="entry-amounts" style="color:'+(total>=0?"var(--critical)":"var(--good-text)")+';font-weight:700;">'+fmtMoney(total)+statutPill+'</span></div>'+
+        deplacementBadge;
       card.onclick = function(){ openForm("camion", e.id); };
       container.appendChild(card);
     });
@@ -653,9 +798,10 @@
       var reste = computeReste("depot", e);
       var card = document.createElement("div");
       card.className = "entry-card";
+      var meta = [e.rendement?("Rendement : "+esc(e.rendement)):"", "Total : "+fmtMoney(e.total)].filter(Boolean).join(" · ");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.nom||"Client")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+[e.rendement?("Rendement : "+esc(e.rendement)):"", "Total : "+fmtMoney(e.total)].filter(Boolean).join(" · ")+'</span>'+
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
         '<span class="entry-amounts">Reste '+pill(reste)+'</span></div>';
       card.onclick = function(){ openForm("depot", e.id); };
       container.appendChild(card);
@@ -676,9 +822,10 @@
       var reste = computeReste("carriere", e);
       var card = document.createElement("div");
       card.className = "entry-card";
+      var meta = [e.camion?("Camion : "+esc(e.camion)):"", e.poids?(e.poids+" T"):"", e.gony?("Gony : "+e.gony):"", e.objetCommission?("Commission : "+esc(e.objetCommission)):""].filter(Boolean).join(" · ");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.nom||"Fournisseur")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+[e.camion?("Camion : "+esc(e.camion)):"", e.poids?(e.poids+" T"):"", e.gony?("Gony : "+e.gony):"", e.objetCommission?("Commission : "+esc(e.objetCommission)):""].filter(Boolean).join(" · ")+'</span>'+
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
         '<span class="entry-amounts">Reste '+pill(reste)+'</span></div>';
       card.onclick = function(){ openForm("carriere", e.id); };
       container.appendChild(card);
@@ -703,7 +850,7 @@
       var meta = [e.nomDepot?("Dépôt : "+esc(e.nomDepot)):"", tonnageTotal?(tonnageTotal+" kg (total)"):"", e.pourcentage?(e.pourcentage+"%"):""].filter(Boolean).join(" · ");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.camion||"Camion")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
         '<span class="entry-amounts">Versement payé : '+fmtMoney(versement)+'</span></div>';
       card.onclick = function(){ openForm("moi", e.id); };
       container.appendChild(card);
@@ -729,7 +876,7 @@
       var meta = [e.tonnage?(e.tonnage+" T"):"", e.entree?("Entrée : "+fmtMoney(e.entree)):""].filter(Boolean).join(" · ");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.camionArrive||"Journal")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
         '<span class="entry-amounts" style="color:'+(reste>=0?"var(--good-text)":"var(--critical)")+';font-weight:700;">Reste : '+fmtMoney(reste)+'</span></div>';
       card.onclick = function(){ openForm("journal", e.id); };
       container.appendChild(card);
@@ -753,7 +900,7 @@
       var meta = [e.objetCommission?esc(e.objetCommission):"", e.reste?("Reste : "+fmtMoney(e.reste)):""].filter(Boolean).join(" · ");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.objetCommission||"TsyHadino")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
         '<span class="entry-amounts" style="font-weight:700;">Total : '+fmtMoney(total1)+'</span></div>';
       card.onclick = function(){ openForm("tsyhadino", e.id); };
       container.appendChild(card);
@@ -777,7 +924,7 @@
       var meta = [e.chargement?esc(e.chargement):"", e.poidsGony?("Poids/Gony : "+e.poidsGony):""].filter(Boolean).join(" · ");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.nom||"Chargement")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+meta+'</span>'+
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
         '<span class="entry-amounts">Reste '+pill(reste)+'</span></div>';
       card.onclick = function(){ openForm("chargement", e.id); };
       container.appendChild(card);
@@ -788,11 +935,10 @@
   function unifiedTransactions(){
     var items = [];
     data.camion.forEach(function(e){
-      var statutTxt = e.statutPaiement==="paye"
-        ? "Payé" + (e.datePaiement?(" · "+fmtDate(e.datePaiement)):"")
-        : "Non payé" + (e.dateNonPaye?(" · "+fmtDate(e.dateNonPaye)):"");
-      var sub = [e.chauffeur, statutTxt].filter(Boolean).join(" · ");
-      items.push({cat:"camion", id:e.id, date:e.date, title:e.nomCamion||"Camion", sub:sub, amount:-computeCamionTotal(e), amountLabel:"Dépense"});
+      var statutPill = e.statutPaiement==="paye"
+        ? ' <span class="pill reste-clear">Payé'+(e.datePaiement?(" · "+fmtDate(e.datePaiement)):"")+'</span>'
+        : ' <span class="pill reste-due">Non payé'+(e.dateNonPaye?(" · "+fmtDate(e.dateNonPaye)):"")+'</span>';
+      items.push({cat:"camion", id:e.id, date:e.date, title:e.nomCamion||"Camion", sub:e.chauffeur||"", statutPill:statutPill, amount:-computeCamionTotal(e), amountLabel:"Dépense"});
     });
     data.depot.forEach(function(e){
       items.push({cat:"depot", id:e.id, date:e.date, title:e.nom||"Dépôt", sub:"Avance reçue", amount:num(e.avance), amountLabel:"Encaissé"});
@@ -841,10 +987,11 @@
       var card = document.createElement("div");
       card.className = "entry-card";
       var amountColor = i.amount>=0 ? "var(--good-text)" : "var(--critical)";
+      var subText = esc(i.sub||"");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+meta.icon+' '+esc(i.title)+'</span><span class="entry-date">'+fmtDate(i.date)+'</span></div>'+
-        '<div class="entry-row2"><span class="entry-meta">'+esc(i.sub||"")+'</span>'+
-        '<span class="entry-amounts" style="color:'+amountColor+';font-weight:700;">'+(i.amount>=0?"+":"")+fmtMoney(i.amount)+'</span></div>';
+        '<div class="entry-row2"><span class="entry-meta" title="'+subText+'">'+subText+'</span>'+
+        '<span class="entry-amounts" style="color:'+amountColor+';font-weight:700;">'+(i.amount>=0?"+":"")+fmtMoney(i.amount)+(i.statutPill||"")+'</span></div>';
       card.onclick = function(){
         if(i.cat==="libre") openForm("transactions", i.id);
         else openForm(i.cat, i.id);
@@ -880,18 +1027,41 @@
   function switchTab(tab){
     document.querySelectorAll(".tabpanel").forEach(function(p){ p.classList.remove("active"); });
     document.getElementById("tab-"+tab).classList.add("active");
-    document.querySelectorAll("nav.bottomnav button").forEach(function(b){
+    document.querySelectorAll("nav.bottomnav button[data-tab]").forEach(function(b){
       b.classList.toggle("active", b.getAttribute("data-tab")===tab);
     });
+    var navMoreBtnEl = document.getElementById("navMoreBtn");
+    if(navMoreBtnEl){ navMoreBtnEl.classList.toggle("active", tab==="tsyhadino" || tab==="chargement"); }
     document.getElementById("pageTitle").textContent = TAB_TITLES[tab][0];
     document.getElementById("pageSubtitle").textContent = TAB_TITLES[tab][1];
     document.getElementById("fabAdd").title = tab==="transactions" ? "Ajouter une transaction libre" : "Ajouter";
     currentTab = tab;
   }
   var currentTab = "camion";
-  document.querySelectorAll("nav.bottomnav button").forEach(function(b){
+  document.querySelectorAll("nav.bottomnav > button[data-tab]").forEach(function(b){
     b.addEventListener("click", function(){ switchTab(b.getAttribute("data-tab")); });
   });
+
+  /* Menu "Plus" (phone) : regroupe TsyHadino et Chargement */
+  var navMoreBtn = document.getElementById("navMoreBtn");
+  var navMorePopover = document.getElementById("navMorePopover");
+  if(navMoreBtn && navMorePopover){
+    navMoreBtn.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      navMorePopover.classList.toggle("open");
+    });
+    navMorePopover.querySelectorAll("button[data-tab]").forEach(function(b){
+      b.addEventListener("click", function(){
+        switchTab(b.getAttribute("data-tab"));
+        navMorePopover.classList.remove("open");
+      });
+    });
+    document.addEventListener("click", function(ev){
+      if(!ev.target.closest(".nav-more-popover") && !ev.target.closest("#navMoreBtn")){
+        navMorePopover.classList.remove("open");
+      }
+    });
+  }
 
   /* ---------- Recherche globale ----------
      Méthode : recherche par mots-clés (chaque mot doit être trouvé quelque part),
@@ -1042,7 +1212,7 @@
         });
         html += '</select>';
       } else {
-        html += '<input type="'+f.type+'" name="'+f.key+'" value="'+esc(val)+'"'+(f.required?" required":"")+(f.type==="number"?' step="any" inputmode="decimal"':'')+'>';
+        html += '<input type="'+f.type+'" name="'+f.key+'" value="'+esc(val)+'"'+(f.required?" required":"")+(f.type==="number"?' step="any" inputmode="decimal"':'')+(f.type==="date"?' lang="fr"':'')+'>';
       }
       html += '</div>';
       if(cat==="carriere" && f.key==="prix"){
@@ -1248,6 +1418,28 @@
   window.addEventListener("resize", scheduleLayoutMode);
   window.addEventListener("orientationchange", scheduleLayoutMode);
 
+  /* ---------- Apparence claire / sombre ---------- */
+  var THEME_KEY = "suivi_carriere_theme";
+  var themeToggle = document.getElementById("themeToggle");
+  function isDarkEffective(){
+    var t = document.documentElement.getAttribute("data-theme");
+    if(t === "dark") return true;
+    if(t === "light") return false;
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }
+  function updateThemeIcon(){
+    if(themeToggle) themeToggle.textContent = isDarkEffective() ? "☀️" : "🌙";
+  }
+  updateThemeIcon();
+  if(themeToggle){
+    themeToggle.addEventListener("click", function(){
+      var next = isDarkEffective() ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+      updateThemeIcon();
+    });
+  }
+
   /* ---------- Init ---------- */
   applyLayoutMode();
   load();
@@ -1266,9 +1458,14 @@
     });
   }
 
-  /* ---------- Bouton "Installer l'application" (fixe dans l'interface) ---------- */
+  /* ---------- Bouton "Installer l'application" (fixe dans l'interface, mais masquable) ---------- */
   var installBtn = document.getElementById("installBtn");
+  var installBtnAction = document.getElementById("installBtnAction");
+  var installBtnClose = document.getElementById("installBtnClose");
   var deferredInstallPrompt = null;
+  var INSTALL_DISMISS_KEY = "suivi_carriere_install_dismissed";
+  var installDismissed = false;
+  try{ installDismissed = localStorage.getItem(INSTALL_DISMISS_KEY) === "1"; }catch(e){}
 
   function isStandalone(){
     return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
@@ -1276,7 +1473,7 @@
   var isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 
   function showInstallBtn(){
-    if(!isStandalone()) installBtn.classList.add("show");
+    if(!isStandalone() && !installDismissed) installBtn.classList.add("show");
   }
   function hideInstallBtn(){
     installBtn.classList.remove("show");
@@ -1295,7 +1492,7 @@
     showToast("Application installée ✅");
   });
 
-  installBtn.addEventListener("click", function(){
+  installBtnAction.addEventListener("click", function(){
     if(deferredInstallPrompt){
       deferredInstallPrompt.prompt();
       deferredInstallPrompt.userChoice.then(function(){
@@ -1309,9 +1506,17 @@
     }
   });
 
+  installBtnClose.addEventListener("click", function(ev){
+    ev.stopPropagation();
+    installDismissed = true;
+    hideInstallBtn();
+    try{ localStorage.setItem(INSTALL_DISMISS_KEY, "1"); }catch(e){}
+  });
+
   // Si le navigateur ne déclenche jamais beforeinstallprompt (Safari iOS notamment),
-  // le bouton reste quand même visible pour guider l'utilisateur — sauf si déjà installée.
-  if(!isStandalone()){
+  // le bouton reste quand même visible pour guider l'utilisateur — sauf si déjà installée
+  // ou si la personne l'a déjà masqué avec la croix.
+  if(!isStandalone() && !installDismissed){
     setTimeout(function(){
       if(!deferredInstallPrompt) showInstallBtn();
     }, 800);
