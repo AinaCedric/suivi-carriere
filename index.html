@@ -515,7 +515,7 @@
   <section class="tabpanel" id="tab-tsyhadino">
     <div class="stats-grid">
       <div class="stat-tile"><div class="label">Opérations</div><div class="value" id="tsyhadino-count">0</div></div>
-      <div class="stat-tile"><div class="label">Total</div><div class="value" id="tsyhadino-total">0 Ar</div></div>
+      <div class="stat-tile"><div class="label">Reste avance</div><div class="value" id="tsyhadino-total">0 Ar</div></div>
     </div>
     <div class="section-title">Historique — TsyHadino</div>
     <div id="tsyhadino-list"></div>
@@ -676,11 +676,12 @@
       {key:"autresCommission", label:"Autres commission ("+DEVISE+")", type:"number"}
     ],
     tsyhadino: [
-      {key:"reste", label:"Reste ("+DEVISE+")", type:"number"},
+      {key:"avance", label:"Avance ("+DEVISE+")", type:"number"},
       {key:"date", label:"Date", type:"date", required:true},
       {key:"objetCommission", label:"Objet commission", type:"text"},
-      {key:"prix", label:"Prix ("+DEVISE+")", type:"number"},
-      {key:"pvary", label:"P.vary ("+DEVISE+")", type:"number"}
+      {key:"prixCommission", label:"Prix commission ("+DEVISE+")", type:"number"},
+      {key:"chargements", label:"Chargements", type:"number"},
+      {key:"puGony", label:"P.U Gony ("+DEVISE+")", type:"number"}
     ],
     chargement: [
       {key:"date", label:"Date", type:"date", required:true},
@@ -693,7 +694,10 @@
   };
 
   function computeTsyHadinoTotal(entry){
-    return num(entry.reste) + (num(entry.prix) + num(entry.pvary));
+    return num(entry.chargements) * num(entry.puGony);
+  }
+  function computeTsyHadinoReste(entry){
+    return num(entry.avance) - num(entry.prixCommission) - computeTsyHadinoTotal(entry);
   }
   function computeChargementTotal(entry){
     return num(entry.poidsGony) * num(entry.prix);
@@ -885,23 +889,26 @@
 
   function renderTsyHadino(){
     var list = data.tsyhadino;
-    var total = 0;
-    list.forEach(function(e){ total += computeTsyHadinoTotal(e); });
     document.getElementById("tsyhadino-count").textContent = list.length;
-    document.getElementById("tsyhadino-total").textContent = fmtMoney(total);
+    var sorted = sortedByDateDesc(list);
+    var currentReste = sorted.length ? computeTsyHadinoReste(sorted[0]) : 0;
+    var totalEl = document.getElementById("tsyhadino-total");
+    totalEl.textContent = fmtMoney(currentReste);
+    totalEl.className = "value " + (currentReste>=0 ? "good" : "critical");
 
     var container = document.getElementById("tsyhadino-list");
     container.innerHTML = "";
     if(list.length===0){ container.innerHTML = emptyState("Aucune entrée. Appuie sur + pour ajouter."); return; }
-    sortedByDateDesc(list).forEach(function(e){
+    sorted.forEach(function(e){
       var total1 = computeTsyHadinoTotal(e);
+      var reste1 = computeTsyHadinoReste(e);
       var card = document.createElement("div");
       card.className = "entry-card";
-      var meta = [e.objetCommission?esc(e.objetCommission):"", e.reste?("Reste : "+fmtMoney(e.reste)):""].filter(Boolean).join(" · ");
+      var meta = [e.objetCommission?esc(e.objetCommission):"", e.chargements?("Chargements : "+e.chargements):"", "Total : "+fmtMoney(total1)].filter(Boolean).join(" · ");
       card.innerHTML =
         '<div class="entry-row1"><span class="entry-name">'+esc(e.objetCommission||"TsyHadino")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
         '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
-        '<span class="entry-amounts" style="font-weight:700;">Total : '+fmtMoney(total1)+'</span></div>';
+        '<span class="entry-amounts" style="color:'+(reste1>=0?"var(--good-text)":"var(--critical)")+';font-weight:700;">Reste avance : '+fmtMoney(reste1)+'</span></div>';
       card.onclick = function(){ openForm("tsyhadino", e.id); };
       container.appendChild(card);
     });
@@ -1021,7 +1028,7 @@
     moi: ["Moi", "Calcul du versement à payer (poids, prix, pourcentage)"],
     journal: ["Journal", "Entrées, dépenses et commissions au jour le jour"],
     transactions: ["Mes Transactions", "Vue d'ensemble et journal complet"],
-    tsyhadino: ["TsyHadino", "Onglet indépendant — Reste, Prix, P.vary"],
+    tsyhadino: ["TsyHadino", "Onglet indépendant — Avance, Commission, Chargements"],
     chargement: ["Chargement", "Onglet indépendant — Poids/Gony, Prix, Avance"]
   };
   function switchTab(tab){
@@ -1101,7 +1108,7 @@
       pushItem("libre", e.id, e.description||(e.type==="depense"?"Dépense":"Recette"), e.categorie||"", e.date, [e.categorie, e.montant, e.type]);
     });
     data.tsyhadino.forEach(function(e){
-      pushItem("tsyhadino", e.id, e.objetCommission||"TsyHadino", e.reste?("Reste : "+fmtMoney(e.reste)):"", e.date, [e.objetCommission, e.reste, e.prix, e.pvary]);
+      pushItem("tsyhadino", e.id, e.objetCommission||"TsyHadino", "Reste avance : "+fmtMoney(computeTsyHadinoReste(e)), e.date, [e.objetCommission, e.avance, e.prixCommission, e.chargements, e.puGony]);
     });
     data.chargement.forEach(function(e){
       pushItem("chargement", e.id, e.nom||"Chargement", e.chargement||"", e.date, [e.nom, e.chargement, e.poidsGony, e.prix, e.avance]);
@@ -1201,9 +1208,15 @@
       {key:"montant", label:"Montant ("+DEVISE+")", type:"number", required:true}
     ] : FIELDS[cat];
 
+    var tsyhadinoDefaultAvance = "";
+    if(cat==="tsyhadino" && isNew && data.tsyhadino.length){
+      tsyhadinoDefaultAvance = computeTsyHadinoReste(sortedByDateDesc(data.tsyhadino)[0]);
+    }
+
     var html = "";
     fields.forEach(function(f){
-      var val = entry ? (entry[f.key] !== undefined ? entry[f.key] : "") : (f.key==="date" ? todayISO() : "");
+      var val = entry ? (entry[f.key] !== undefined ? entry[f.key] : "")
+        : (f.key==="date" ? todayISO() : (cat==="tsyhadino" && f.key==="avance" ? tsyhadinoDefaultAvance : ""));
       html += '<div class="field"><label>'+esc(f.label)+'</label>';
       if(f.type==="select"){
         html += '<select name="'+f.key+'"'+(f.required?" required":"")+'>';
@@ -1220,6 +1233,9 @@
       }
       if(cat==="chargement" && f.key==="prix"){
         html += '<div class="field"><label>Total (calculé automatiquement)</label><div class="computed" id="computedChargementTotal">'+fmtMoney(entry?computeChargementTotal(entry):0)+'</div></div>';
+      }
+      if(cat==="tsyhadino" && f.key==="puGony"){
+        html += '<div class="field"><label>Total (calculé automatiquement)</label><div class="computed" id="computedTsyHadinoTotal">'+fmtMoney(entry?computeTsyHadinoTotal(entry):0)+'</div></div>';
       }
     });
 
@@ -1240,7 +1256,8 @@
       html += '<div class="field"><label>Reste Total (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeJournalReste(entry):0)+'</div></div>';
     }
     if(cat==="tsyhadino"){
-      html += '<div class="field"><label>Total (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeTsyHadinoTotal(entry):0)+'</div></div>';
+      var tsyhadinoInitialReste = entry ? computeTsyHadinoReste(entry) : computeTsyHadinoReste({avance:tsyhadinoDefaultAvance});
+      html += '<div class="field"><label>Reste Avance (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(tsyhadinoInitialReste)+'</div></div>';
     }
     if(cat==="chargement"){
       html += '<div class="field"><label>Reste à payer (calculé automatiquement)</label><div class="computed" id="computedReste">'+fmtMoney(entry?computeChargementReste(entry):0)+'</div></div>';
@@ -1274,7 +1291,11 @@
         if(tonnageTotalEl) tonnageTotalEl.textContent = computeTonnageTotal(tmp) + " kg";
       }
       else if(cat==="journal") computedEl.textContent = fmtMoney(computeJournalReste(tmp));
-      else if(cat==="tsyhadino") computedEl.textContent = fmtMoney(computeTsyHadinoTotal(tmp));
+      else if(cat==="tsyhadino"){
+        computedEl.textContent = fmtMoney(computeTsyHadinoReste(tmp));
+        var tsyhadinoTotalEl = document.getElementById("computedTsyHadinoTotal");
+        if(tsyhadinoTotalEl) tsyhadinoTotalEl.textContent = fmtMoney(computeTsyHadinoTotal(tmp));
+      }
       else if(cat==="chargement"){
         computedEl.textContent = fmtMoney(computeChargementReste(tmp));
         var chargementTotalEl = document.getElementById("computedChargementTotal");
