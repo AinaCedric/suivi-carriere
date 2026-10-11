@@ -697,7 +697,7 @@
     return num(entry.chargements) * num(entry.puGony);
   }
   function computeTsyHadinoReste(entry){
-    return num(entry.avance) - num(entry.prixCommission) - computeTsyHadinoTotal(entry);
+    return (num(entry.avance) + num(entry.prixCommission)) - computeTsyHadinoTotal(entry);
   }
   function computeChargementTotal(entry){
     return num(entry.poidsGony) * num(entry.prix);
