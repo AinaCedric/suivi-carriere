@@ -38,6 +38,7 @@
     --series-journal:#ec6fa0;
     --series-tsyhadino:#0f9d33;
     --series-chargement:#ef4444;
+    --series-chauffeur:#0891b2;
     --good:#16a34a;
     --good-text:#15803d;
     --critical:#dc2626;
@@ -69,6 +70,7 @@
       --series-journal:#f082ab;
       --series-tsyhadino:#1fb84a;
       --series-chargement:#f16565;
+      --series-chauffeur:#22c3e6;
       --good:#22c55e;
       --good-text:#4ade80;
       --critical:#f16565;
@@ -98,6 +100,7 @@
     --series-journal:#f082ab;
     --series-tsyhadino:#1fb84a;
     --series-chargement:#f16565;
+    --series-chauffeur:#22c3e6;
     --good:#22c55e;
     --good-text:#4ade80;
     --critical:#f16565;
@@ -232,6 +235,7 @@
   #tab-journal .entry-card{ border-left-color:var(--series-journal); }
   #tab-tsyhadino .entry-card{ border-left-color:var(--series-tsyhadino); }
   #tab-chargement .entry-card{ border-left-color:var(--series-chargement); }
+  #tab-chauffeur .entry-card{ border-left-color:var(--series-chauffeur); }
   .entry-row1{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
   .entry-name{ font-weight:700; font-size:15px; }
   .entry-date{ font-size:12px; color:var(--muted); white-space:nowrap; }
@@ -521,6 +525,17 @@
     <div id="tsyhadino-list"></div>
   </section>
 
+  <!-- CHAUFFEUR (onglet indépendant) -->
+  <section class="tabpanel" id="tab-chauffeur">
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="label">Opérations</div><div class="value" id="chauffeur-count">0</div></div>
+      <div class="stat-tile"><div class="label">Non payés</div><div class="value critical" id="chauffeur-nonpaye">0</div></div>
+      <div class="stat-tile" style="grid-column:1/-1;"><div class="label">Total des avances</div><div class="value" id="chauffeur-avance">0 Ar</div></div>
+    </div>
+    <div class="section-title">Historique — Chauffeur</div>
+    <div id="chauffeur-list"></div>
+  </section>
+
   <!-- CHARGEMENT (onglet indépendant) -->
   <section class="tabpanel" id="tab-chargement">
     <div class="stats-grid">
@@ -544,9 +559,11 @@
   <button data-tab="transactions"><span class="icon">📒</span>Transactions</button>
   <button type="button" class="nav-more" id="navMoreBtn"><span class="icon">⋯</span>Plus</button>
   <button data-tab="tsyhadino" class="nav-sep nav-extra"><span class="icon">📌</span>TsyHadino</button>
+  <button data-tab="chauffeur" class="nav-extra"><span class="icon">👷</span>Chauffeur</button>
   <button data-tab="chargement" class="nav-extra"><span class="icon">📦</span>Chargement</button>
   <div class="nav-more-popover" id="navMorePopover">
     <button type="button" data-tab="tsyhadino"><span class="icon">📌</span>TsyHadino</button>
+    <button type="button" data-tab="chauffeur"><span class="icon">👷</span>Chauffeur</button>
     <button type="button" data-tab="chargement"><span class="icon">📦</span>Chargement</button>
   </div>
 </nav>
@@ -586,7 +603,7 @@
     return parts[2]+"/"+parts[1]+"/"+parts[0];
   }
 
-  var DEFAULT_DATA = { camion:[], depot:[], carriere:[], moi:[], journal:[], transactions:[], tsyhadino:[], chargement:[] };
+  var DEFAULT_DATA = { camion:[], depot:[], carriere:[], moi:[], journal:[], transactions:[], tsyhadino:[], chauffeur:[], chargement:[] };
   var data = null;
 
   function load(){
@@ -598,7 +615,7 @@
       storageOK = false;
       data = JSON.parse(JSON.stringify(DEFAULT_DATA));
     }
-    ["camion","depot","carriere","moi","journal","transactions","tsyhadino","chargement"].forEach(function(k){
+    ["camion","depot","carriere","moi","journal","transactions","tsyhadino","chauffeur","chargement"].forEach(function(k){
       if(!Array.isArray(data[k])) data[k] = [];
     });
   }
@@ -683,6 +700,17 @@
       {key:"chargements", label:"Chargements", type:"number"},
       {key:"puGony", label:"P.U Gony ("+DEVISE+")", type:"number"}
     ],
+    chauffeur: [
+      {key:"nom", label:"Nom", type:"text"},
+      {key:"date", label:"Date", type:"date", required:true},
+      {key:"chargement", label:"Chargement", type:"text"},
+      {key:"carriere", label:"Carrière", type:"text"},
+      {key:"depot", label:"Dépôt", type:"text"},
+      {key:"avance", label:"Avance ("+DEVISE+")", type:"number"},
+      {key:"statutPaiement", label:"Statut", type:"select", options:[["nonpaye","Non payé"],["paye","Payé"]]},
+      {key:"dateNonPaye", label:"Date (non payé)", type:"date"},
+      {key:"datePaiement", label:"Date de paiement (payé)", type:"date"}
+    ],
     chargement: [
       {key:"date", label:"Date", type:"date", required:true},
       {key:"nom", label:"Nom", type:"text"},
@@ -738,6 +766,7 @@
     journal:  {icon:"📓", color:"var(--series-journal)"},
     libre:    {icon:"📝", color:"var(--series-transactions)"},
     tsyhadino:{icon:"📌", color:"var(--series-tsyhadino)"},
+    chauffeur:{icon:"👷", color:"var(--series-chauffeur)"},
     chargement:{icon:"📦", color:"var(--series-chargement)"}
   };
 
@@ -750,6 +779,7 @@
     renderJournal();
     renderTransactions();
     renderTsyHadino();
+    renderChauffeur();
     renderChargement();
   }
 
@@ -914,6 +944,34 @@
     });
   }
 
+  function renderChauffeur(){
+    var list = data.chauffeur;
+    var totalAvance = 0, nbNonPaye = 0;
+    list.forEach(function(e){ totalAvance += num(e.avance); if(e.statutPaiement!=="paye") nbNonPaye++; });
+    document.getElementById("chauffeur-count").textContent = list.length;
+    document.getElementById("chauffeur-nonpaye").textContent = nbNonPaye;
+    document.getElementById("chauffeur-avance").textContent = fmtMoney(totalAvance);
+
+    var container = document.getElementById("chauffeur-list");
+    container.innerHTML = "";
+    if(list.length===0){ container.innerHTML = emptyState("Aucun chauffeur enregistré. Appuie sur + pour ajouter."); return; }
+    sortedByDateDesc(list).forEach(function(e){
+      var card = document.createElement("div");
+      card.className = "entry-card";
+      var meta = [e.chargement, e.carriere?("Carrière : "+e.carriere):"", e.depot?("Dépôt : "+e.depot):""].filter(Boolean).map(esc).join(" · ");
+      var statutPill = e.statutPaiement==="paye"
+        ? '<span class="pill reste-clear" style="margin-left:0">Payé'+(e.datePaiement?(" · "+fmtDate(e.datePaiement)):"")+'</span>'
+        : '<span class="pill reste-due" style="margin-left:0">Non payé'+(e.dateNonPaye?(" · "+fmtDate(e.dateNonPaye)):"")+'</span>';
+      card.innerHTML =
+        '<div class="entry-row1"><span class="entry-name">'+esc(e.nom||"Chauffeur")+'</span><span class="entry-date">'+fmtDate(e.date)+'</span></div>'+
+        '<div class="entry-row2"><span class="entry-meta" title="'+meta+'">'+meta+'</span>'+
+        '<span class="entry-amounts" style="font-weight:700;">'+(e.avance?("Avance : "+fmtMoney(e.avance)):"")+'</span></div>'+
+        '<div class="entry-row3">'+statutPill+'</div>';
+      card.onclick = function(){ openForm("chauffeur", e.id); };
+      container.appendChild(card);
+    });
+  }
+
   function renderChargement(){
     var list = data.chargement;
     var totalAvance = 0, totalReste = 0;
@@ -1029,6 +1087,7 @@
     journal: ["Journal", "Entrées, dépenses et commissions au jour le jour"],
     transactions: ["Mes Transactions", "Vue d'ensemble et journal complet"],
     tsyhadino: ["TsyHadino", "Onglet indépendant — Avance, Commission, Chargements"],
+    chauffeur: ["Chauffeur", "Onglet indépendant — Chargement, Carrière, Dépôt, Avance"],
     chargement: ["Chargement", "Onglet indépendant — Poids/Gony, Prix, Avance"]
   };
   function switchTab(tab){
@@ -1038,7 +1097,7 @@
       b.classList.toggle("active", b.getAttribute("data-tab")===tab);
     });
     var navMoreBtnEl = document.getElementById("navMoreBtn");
-    if(navMoreBtnEl){ navMoreBtnEl.classList.toggle("active", tab==="tsyhadino" || tab==="chargement"); }
+    if(navMoreBtnEl){ navMoreBtnEl.classList.toggle("active", tab==="tsyhadino" || tab==="chauffeur" || tab==="chargement"); }
     document.getElementById("pageTitle").textContent = TAB_TITLES[tab][0];
     document.getElementById("pageSubtitle").textContent = TAB_TITLES[tab][1];
     document.getElementById("fabAdd").title = tab==="transactions" ? "Ajouter une transaction libre" : "Ajouter";
@@ -1109,6 +1168,11 @@
     });
     data.tsyhadino.forEach(function(e){
       pushItem("tsyhadino", e.id, e.objetCommission||"TsyHadino", "Reste avance : "+fmtMoney(computeTsyHadinoReste(e)), e.date, [e.objetCommission, e.avance, e.prixCommission, e.chargements, e.puGony]);
+    });
+    data.chauffeur.forEach(function(e){
+      var statutTxt = e.statutPaiement==="paye" ? "Payé" : "Non payé";
+      pushItem("chauffeur", e.id, e.nom||"Chauffeur", [e.chargement, statutTxt].filter(Boolean).join(" · "), e.date,
+        [e.nom, e.chargement, e.carriere, e.depot, e.avance, statutTxt, e.dateNonPaye, e.datePaiement]);
     });
     data.chargement.forEach(function(e){
       pushItem("chargement", e.id, e.nom||"Chargement", e.chargement||"", e.date, [e.nom, e.chargement, e.poidsGony, e.prix, e.avance]);
@@ -1323,7 +1387,7 @@
   }
 
   function labelForCat(cat){
-    return {camion:"Camion", depot:"Dépôt", carriere:"Carrière", moi:"Moi", journal:"Journal", transactions:"Transaction libre", tsyhadino:"TsyHadino", chargement:"Chargement"}[cat];
+    return {camion:"Camion", depot:"Dépôt", carriere:"Carrière", moi:"Moi", journal:"Journal", transactions:"Transaction libre", tsyhadino:"TsyHadino", chauffeur:"Chauffeur", chargement:"Chargement"}[cat];
   }
 
   entryForm.addEventListener("submit", function(ev){
@@ -1379,7 +1443,7 @@
       try{
         var parsed = JSON.parse(reader.result);
         if(!confirm("Remplacer toutes les données actuelles par celles du fichier ?")) return;
-        ["camion","depot","carriere","moi","journal","transactions","tsyhadino","chargement"].forEach(function(k){
+        ["camion","depot","carriere","moi","journal","transactions","tsyhadino","chauffeur","chargement"].forEach(function(k){
           data[k] = Array.isArray(parsed[k]) ? parsed[k] : [];
         });
         save(); renderAll();
